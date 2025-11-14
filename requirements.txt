@@ -1,0 +1,11 @@
+Flask==3.0.3
+pymongo==4.10.1
+bcrypt==4.2.0
+Flask-Cors==4.0.1
+
+# For production server (and Codespaces hosting)
+gunicorn==22.0.0
+
+# If your project uses websockets in future, uncomment:
+# flask-socketio==5.3.6
+# eventlet==0.36.1
