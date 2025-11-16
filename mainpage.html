@@ -1179,17 +1179,19 @@
     </div>
 
     <script>
+        // --- FIX #1: Define API_URL correctly ---
+        const API_URL = window.location.origin;
+
         let currentUser = null;
         let allGroups = [];
         let currentTab = 'available';
-        let displayedGroups = [];
+        let displayedGroups = []; // This seems unused, can be removed, but fine to leave
         let displayedCount = 0;
         const groupsPerLoad = 10;
-        let totalGroupsLoaded = 0;
+        let totalGroupsLoaded = 0; // This seems unused, can be removed
 
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', async () => {
-            // FIX #12: Use consistent key
             const userStr = localStorage.getItem('huddleUser');
             if (!userStr) {
                 alert('Please login first');
@@ -1202,13 +1204,16 @@
             await loadGroups();
             
             // Set active nav item
-            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+            // Check for both 'mainpage' and empty path for index
+            const path = window.location.pathname.split('/').pop();
+            const currentPage = (path === '' || path === 'mainpage.html') ? 'mainpage' : path.replace('.html', '');
+            
             const navItems = document.querySelectorAll('.nav-item[data-page]');
             navItems.forEach(item => {
                 item.classList.toggle('active', item.getAttribute('data-page') === currentPage);
             });
             
-            // FIX #13: Add proper event listener for modal backdrop click
+            // Add event listener for modal backdrop click
             const modal = document.getElementById('groupModal');
             if (modal) {
                 modal.addEventListener('click', function(event) {
@@ -1217,6 +1222,9 @@
                     }
                 });
             }
+            
+            // Setup navigation listeners (moved from bottom for clarity)
+            setupNavigation();
         });
 
         function updateUserInterface() {
@@ -1258,24 +1266,24 @@
         
         // === Skeleton Loader Function ===
         function showGroupSkeletons(count = 3) {
-          const container = document.getElementById('groupsContainer');
-          let skeletonHTML = '';
-          for (let i = 0; i < count; i++) {
-            skeletonHTML += `
-              <div class="skeleton-group-card">
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div class="skeleton-avatar"></div>
-                    <div>
-                        <div class="skeleton-text short" style="height: 18px; margin-bottom: 5px;"></div>
-                        <div class="skeleton-text" style="height: 10px;"></div>
+            const container = document.getElementById('groupsContainer');
+            let skeletonHTML = '';
+            for (let i = 0; i < count; i++) {
+                skeletonHTML += `
+                  <div class="skeleton-group-card">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div class="skeleton-avatar"></div>
+                        <div>
+                            <div class="skeleton-text short" style="height: 18px; margin-bottom: 5px;"></div>
+                            <div class="skeleton-text" style="height: 10px;"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
-              </div>
-            `;
-          }
-          container.innerHTML = skeletonHTML;
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                  </div>
+                `;
+            }
+            container.innerHTML = skeletonHTML;
         }
         // === END Skeleton Function ===
 
@@ -1283,8 +1291,8 @@
             showGroupSkeletons(3);
 
             try {
-                // FIX #1: Corrected endpoint call to /getavailablegroups
-                const response = await fetch(`${window.location.origin}/getavailablegroups`, {
+                // Use the API_URL variable
+                const response = await fetch(`${API_URL}/getavailablegroups`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ userId: currentUser.id })
@@ -1294,7 +1302,7 @@
                 if (result.success) {
                     allGroups = result.groups || [];
                     
-                    // FIX #9: Fix more timeline typos
+                    // Fix timeline typos
                     allGroups.forEach(group => {
                         if (group.projecttimeline) {
                             group.projecttimeline = group.projecttimeline
@@ -1308,12 +1316,11 @@
                         }
                     });
                     
-                    updateTabCounts(); // FIX #5: Call to update counts
+                    updateTabCounts();
                     displayFilteredGroups();
                     
                     console.log(`✅ Loaded ${allGroups.length} groups`);
                 } else {
-                    // FIX #11: Show error state on API failure
                     document.getElementById('groupsContainer').innerHTML = `
                         <div class="no-groups">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -1327,7 +1334,6 @@
                 }
             } catch (error) {
                 console.error('Error loading groups:', error);
-                // FIX #11: Show error state on network error
                 document.getElementById('groupsContainer').innerHTML = `
                     <div class="no-groups">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -1341,7 +1347,6 @@
             }
         }
 
-        // FIX #5: Fixed updateTabCounts function
         function updateTabCounts() {
             if (!allGroups || !Array.isArray(allGroups) || !currentUser) {
                 console.log('Cannot update tab counts: missing data');
@@ -1391,7 +1396,6 @@
         
         let searchQuery = "";
         
-        // FIX #7: Reset pagination on search input
         document.getElementById('groupSearchInput').oninput = debounce(function(e) {
           displayedCount = 0; // CRITICAL: Reset pagination counter
           searchGroups(e.target.value);
@@ -1405,42 +1409,41 @@
         
         // Enhanced filter for all group fields and both tabs
         function displayFilteredGroups() {
-          // Show search loading state immediately if a query exists and it's the first page
-          const container = document.getElementById('groupsContainer');
-          if (searchQuery && displayedCount === 0) {
-              container.innerHTML = `<div class="loading-groups">
-                <div class="loading-spinner"></div>
-                Searching for groups matching "${escapeHtml(searchQuery)}"...
-            </div>`;
-          }
+            const container = document.getElementById('groupsContainer');
+            if (searchQuery && displayedCount === 0) {
+                 container.innerHTML = `<div class="loading-groups">
+                    <div class="loading-spinner"></div>
+                    Searching for groups matching "${escapeHtml(searchQuery)}"...
+                </div>`;
+            }
 
-          let filteredGroups = [...allGroups];
-          
-          if (searchQuery) {
-            filteredGroups = filteredGroups.filter(group => {
-              let fields = [
-                group.projectname,
-                group.descriptionobjective,
-                ...(group.requiredskills || []),
-                String(group.members?.length ?? 0), // Member count
-                group.projecttimeline || ''
-              ];
-              return fields.join(' ').toLowerCase().includes(searchQuery);
-            });
-          }
-          
-          // Separate into Available/My Groups for tab logic
-          let availableGroups = filteredGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull);
-          let myGroups = filteredGroups.filter(g => g.members?.includes(currentUser.id));
-          
-          // Render tab based on which is active
-          if (currentTab === "available") {
-            displayGroupsBatch(availableGroups, 'available');
-            showResultsCount(availableGroups.length, allGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull).length);
-          } else {
-            displayGroupsBatch(myGroups, 'myGroups');
-            showResultsCount(myGroups.length, allGroups.filter(g => g.members?.includes(currentUser.id)).length);
-          }
+            let filteredGroups = [...allGroups];
+            
+            if (searchQuery) {
+              filteredGroups = filteredGroups.filter(group => {
+                let fields = [
+                  group.projectname,
+                  group.descriptionobjective,
+                  ...(group.requiredskills || []),
+                  String(group.members?.length ?? 0), // Member count
+                  group.projecttimeline || ''
+                ];
+                return fields.join(' ').toLowerCase().includes(searchQuery);
+              });
+            }
+            
+            // Separate into Available/My Groups for tab logic
+            let availableGroups = filteredGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull);
+            let myGroups = filteredGroups.filter(g => g.members?.includes(currentUser.id));
+            
+            // Render tab based on which is active
+            if (currentTab === "available") {
+              displayGroupsBatch(availableGroups, 'available');
+              showResultsCount(availableGroups.length, allGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull).length);
+            } else {
+              displayGroupsBatch(myGroups, 'myGroups');
+              showResultsCount(myGroups.length, allGroups.filter(g => g.members?.includes(currentUser.id)).length);
+            }
         }
         
         function showResultsCount(filtered, total) {
@@ -1478,9 +1481,6 @@
           displayFilteredGroups();
         }
 
-        // --- END OF JAVASCRIPT SEARCH SECTION ---
-        
-        // === MODIFIED: displayGroupsBatch (Fixes bug #4 Logic) ===
         function displayGroupsBatch(groupsToDisplay, tabName) {
             const groupsContainer = document.getElementById('groupsContainer');
             const startIndex = displayedCount;
@@ -1508,7 +1508,6 @@
                         </div>
                     `;
                 } else {
-                    // FIX #4: Updated logic for 'available' tab empty state
                     const myGroupsCount = allGroups.filter(g => g.members?.includes(currentUser.id)).length;
                     
                     let message, heading;
@@ -1547,7 +1546,6 @@
             groupsContainer.appendChild(fragment);
             
             displayedCount += batchGroups.length;
-            totalGroupsLoaded = displayedCount;
             
             // Update load more button
             const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -1564,19 +1562,16 @@
             }
         }
 
-        // === MODIFIED: createGroupElement (Fixes #8, #10, #14 Logic) ===
         function createGroupElement(group) {
             const groupCard = document.createElement('div');
             groupCard.className = 'group-card';
             groupCard.onclick = (e) => {
-                // BUG FIX #3: Prevent card click if an action button was clicked
                 if (e.target.closest('.join-group-btn') || e.target.closest('.leave-group-btn')) {
                     return;
                 }
                 openGroupModal(group);
             };
 
-            // FIX #10: Robustly get group details with fallback
             const groupId = group.groupId || group.id;
             const groupName = (group.projectname && String(group.projectname).trim()) 
                 ? group.projectname 
@@ -1590,7 +1585,6 @@
             const skills = group.requiredskills || [];
             const timeline = group.projecttimeline;
             
-            // Fix timeline display (handle typos and empty values)
             const formattedTimeline = timeline ? 
                 timeline
                     .replace(/montsg/gi, 'months')
@@ -1612,17 +1606,15 @@
             let spotsLeft = Infinity;
             
             if (maxMembers > 0) {
-                 fillPercent = Math.min((memberCount / maxMembers) * 100, 100); // FIX #8: Cap at 100%
+                 fillPercent = Math.min((memberCount / maxMembers) * 100, 100);
                  spotsLeft = maxMembers - memberCount;
             } else {
-                fillPercent = 0;
+                 fillPercent = 0;
             }
             
-            // `isFull` check based on spotsLeft
             const isFull = spotsLeft <= 0 && maxMembers > 0;
 
             let statusBadge = '';
-            // FIX #14: Corrected Status Badge Logic
             if (isJoined) {
                 statusBadge = '<span class="group-status-badge badge-joined">Member</span>';
             } else if (isFull) {
@@ -1634,7 +1626,6 @@
                   statusBadge = `<span class="group-status-badge badge-open">🟢 Open${spotsLeft > 1 ? ` - ${spotsLeft} spots left` : ''}</span>`;
                 }
             } else {
-                // No max members
                 statusBadge = `<span class="group-status-badge badge-open">🟢 Open</span>`;
             }
             
@@ -1649,7 +1640,6 @@
                 </div>
                 `;
             } else {
-                // No max members, just show count
                 memberCountHtml = `
                 <div class="member-count" style="margin-top: 10px; margin-bottom: 15px;">
                   <span>${memberCount} Members</span>
@@ -1754,7 +1744,7 @@
                         group.projecttimeline || ''
                     ];
                     return fields.join(' ').toLowerCase().includes(searchQuery);
-                });
+                 });
             }
 
             displayGroupsBatch(groupsToDisplay, currentTab);
@@ -1766,7 +1756,6 @@
             const skills = group.requiredskills || [];
             const timeline = group.projecttimeline;
             
-            // Fix timeline display
             const formattedTimeline = timeline ? 
                 timeline
                     .replace(/monts/gi, 'months')
@@ -1831,7 +1820,8 @@
                 // Load current user first if they are a member
                 if (memberIds.includes(currentUser.id)) {
                     membersData.push({
-                        id: currentUser.id,
+                        id: currentUser.id, // Use 'id'
+                        _id: currentUser.id, // Also add '_id' for robustness
                         fullName: currentUser.fullName,
                         branch: currentUser.branch,
                         university: currentUser.university,
@@ -1844,7 +1834,7 @@
                     if (memberId === currentUser.id) continue;
                     
                     try {
-                        const response = await fetch(`${window.location.origin}/getuser/${memberId}`);
+                        const response = await fetch(`${API_URL}/getuser/${memberId}`);
                         const result = await response.json();
                         if (result.success && result.user) {
                             membersData.push(result.user);
@@ -1855,7 +1845,7 @@
                 }
                 
                 // Remove duplicates and sort
-                membersData = [...new Map(membersData.map(m => [m.id, m])).values()];
+                membersData = [...new Map(membersData.map(m => [m.id || m._id, m])).values()];
                 membersData.sort((a, b) => a.fullName.localeCompare(b.fullName));
                 
                 membersList.innerHTML = '';
@@ -1889,10 +1879,17 @@
             memberCard.className = 'member-card';
             memberCard.onclick = (e) => {
                 e.stopPropagation();
-                viewMemberProfile(member.id);
+                // ---
+                // --- THIS IS THE FIX ---
+                // We check for member.id (from login/signup) OR member._id (from older/other API calls)
+                // to ensure we always have a valid ID to send to the profile page.
+                //
+                viewMemberProfile(member.id || member._id);
+                // ---
+                // ---
             };
 
-            const memberId = String(member.id).trim();
+            const memberId = String(member.id || member._id).trim();
             const initials = member.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
             const profilePhotoUrl = member.profilePhotoUrl;
             
@@ -1940,7 +1937,7 @@
 
             if (confirm('Join this group?')) {
                 try {
-                    const response = await fetch(`${window.location.origin}/joingroup`, {
+                    const response = await fetch(`${API_URL}/joingroup`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
@@ -1956,10 +1953,8 @@
                         
                         // Scroll to the group and highlight
                         setTimeout(() => {
-                            // Find the card again after re-render
                             const groupCards = document.querySelectorAll('.group-card');
                             groupCards.forEach(card => {
-                                // Simple check based on group ID
                                 if (card.innerHTML.includes(groupId)) {
                                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     card.style.border = '2px solid var(--accent2)';
@@ -1983,7 +1978,7 @@
             if (!confirm('Are you sure you want to leave this group?')) return;
 
             try {
-                const response = await fetch(`${window.location.origin}/leavegroup`, {
+                const response = await fetch(`${API_URL}/leavegroup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -2043,7 +2038,7 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('huddleUser');
-                localStorage.removeItem('user');
+                localStorage.removeItem('user'); // Also remove old key if it exists
                 window.location.href = 'login.html';
             }
         }
@@ -2079,8 +2074,8 @@
             }, 3000);
         }
 
-        // Universal navigation fixes
-        document.addEventListener('DOMContentLoaded', function() {
+        // --- FIX #2: Corrected navigation script setup ---
+        function setupNavigation() {
             const pageRoutes = {
                 'mainpage': 'mainpage.html',
                 'profile': 'profile.html',
@@ -2091,6 +2086,7 @@
                 'chat': 'chatpage.html'
             };
             
+            // This was already correct, but good to confirm
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -2101,7 +2097,8 @@
                 });
             });
             
-            document.querySelectorAll('onclick="logout()", .logout-btn').forEach(btn => {
+            // This selector was invalid, now fixed
+            document.querySelectorAll('[onclick="logout()"], .logout-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     logout();
@@ -2116,7 +2113,7 @@
                     }
                 }
             });
-        });
+        }
     </script>
 </body>
 </html>
