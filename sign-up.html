@@ -392,10 +392,11 @@
         </form>
     </div>
 
-    <!-- Message box element to replace alert() -->
     <div id="messageBox"></div>
 
     <script>
+        // --- FIX 1: Removed the syntax error line `window.location.origin;;` ---
+
         // Utility function to display non-blocking messages (replacing alert())
         function showMessage(message, type = 'info') {
             const box = document.getElementById('messageBox');
@@ -468,7 +469,7 @@
                 }); 
             }
             
-            // --- Form Submission Handler (Cleaned and updated with user's logic) ---
+            // --- Form Submission Handler (This is the correct, functional one) ---
             if (form) {
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
@@ -482,7 +483,6 @@
                     const password = passwordField.value;
                     const confirmPassword = confirmPasswordField.value;
                     if (password !== confirmPassword) {
-                        // This should already be handled by validatePasswordMatch() and browser validation, but we keep the redundant check for safety.
                         showMessage('Passwords do not match.', 'error');
                         return;
                     }
@@ -500,15 +500,15 @@
 
                     // Process skills string into an array
                     data.skills = (data.skills || '')
-                                            .split(',')
-                                            .map(skill => skill.trim())
-                                            .filter(Boolean);
+                                      .split(',')
+                                      .map(skill => skill.trim())
+                                      .filter(Boolean);
                     
                     // Remove confirmPassword field from data sent to API
                     delete data.confirmPassword;
 
                     try {
-                        // Using the relative path /signup as requested by the user's preferred logic
+                        // Use the relative path /signup, which is correct for your app.py
                         const response = await fetch('/signup', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -542,45 +542,8 @@
             }
         });
     
-    // FIX: Connect signup form to API
-    (function() {
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const fullName = document.getElementById('fullName')?.value.trim() || '';
-                const email = document.querySelector('input[type="email"]')?.value.trim() || '';
-                const password = document.querySelectorAll('input[type="password"]')[0]?.value || '';
-                const confirmPassword = document.querySelectorAll('input[type="password"]')[1]?.value || '';
-                const university = document.getElementById('university')?.value.trim() || '';
-                const department = document.getElementById('department')?.value || '';
-                const year = document.getElementById('year')?.value || '';
-                const skills = (document.getElementById('skills')?.value || '').split(',').map(s => s.trim()).filter(s => s);
-
-                if(password !== confirmPassword) {
-                    alert('Passwords do not match');
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/signup', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({fullName, email, password, confirmPassword, university, branch: department, academicYear: year, skills})
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert('Account created! Redirecting to login...');
-                        window.location.href = '/login.html';
-                    } else {
-                        alert(data.error || 'Signup failed');
-                    }
-                } catch(err) {
-                    alert('Error: ' + err.message);
-                }
-            });
-        }
-    })();
+        // --- FIX 2: Removed the entire duplicate, buggy IIFE script block ---
+        
     </script>
 
 </body>
