@@ -1,4 +1,4 @@
-python app.pybcrypt==4.2.0
+bcrypt==4.2.0
 blinker==1.9.0
 click==8.3.0
 dnspython==2.8.0
