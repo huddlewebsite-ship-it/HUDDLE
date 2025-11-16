@@ -21,15 +21,6 @@ app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app, resources={r"/*": {"origins": os.environ.get("CORS_ORIGINS", "*")}})
 
 # ==================== MONGO CONNECTION (single client, robust) ====================
-
-# Disable caching for HTML files
-@app.after_request
-def add_no_cache_headers(response):
-    if request.path.endswith('.html'):
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-    return response
 # Recommended: set MONGO_URI in environment or Codespaces secrets
 MONGO_URI = os.environ.get("MONGO_URI")
 
@@ -174,7 +165,7 @@ def signup():
                 'bio': user['bio']
             }
         }), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Signup runtime error (DB unavailable): {re}")
         return jsonify({'error': 'Database is unavailable'}), 503
     except Exception as e:
@@ -216,7 +207,7 @@ def login_api():
 
         print(f"✅ User logged in: {email}")
         return jsonify({'success': True, 'user': user_data}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Login runtime error (DB unavailable): {re}")
         return jsonify({'error': 'Database is unavailable'}), 503
     except Exception as e:
@@ -242,7 +233,7 @@ def update_profile():
             return jsonify({"success": True}), 200
         else:
             return jsonify({"error": "User not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Update profile runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database is unavailable"}), 503
     except Exception as e:
@@ -296,7 +287,7 @@ def get_user(user_id):
 
         print(f"✅ Retrieved user: {user_data['fullName']} (ID: {user_data['id']})")
         return jsonify({"success": True, "user": user_data}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get user runtime error (DB unavailable): {re}")
         return jsonify({"success": False, "error": "Database is unavailable"}), 503
     except Exception as e:
@@ -310,42 +301,58 @@ def get_user(user_id):
 
 # GROUP ROUTES
 @app.route('/getavailablegroups', methods=['GET', 'POST'])
+
 def get_groups():
     try:
-        groups_collection = get_collection_safe(student_db, "groups")
-        if request.method == 'POST' and request.json:
-            data = request.get_json()
+        # use local import to guarantee the name is the regex module
+        import re
+
+        # determine user id from POST json or query param
+        if request.method == 'POST' and request.is_json:
+            data = request.get_json() or {}
             userid = str(data.get('userId', ''))
         else:
             userid = str(request.args.get('userId', ''))
 
+        # fetch groups (sorted) and build response
         groups = list(groups_collection.find().sort('createdAt', -1))
         groupslist = []
         for group in groups:
-            members = group.get('members', [])
+            members = group.get('members', []) or []
             members = [str(m) for m in members]
-            preferredteamsize = group.get('preferred_team_size') or group.get('preferredteamsize') or group.get('preferred_team_size') or group.get('preferred_team_size') or group.get('preferred_team_size')
+
+            # tolerant lookup for preferred team size (several possible keys/formats)
+            preferredteamsize = (
+                group.get('preferred_team_size')
+                or group.get('preferredteamsize')
+                or group.get('preferred_teamSize')
+                or group.get('preferred_team-size')
+                or None
+            )
+
             maxsize = None
             if preferredteamsize:
-                match = re.search(r'(\d+)', str(preferredteamsize))
-                if match:
-                    maxsize = int(match.group(1))
-                else:
-                    try:
-                        maxsize = int(preferredteamsize)
-                    except:
-                        maxsize = None
+                # extract first integer if present, else try to parse as int
+                try:
+                    m = re.search(r'(\d+)', str(preferredteamsize))
+                    if m:
+                        maxsize = int(m.group(1))
+                    else:
+                        maxsize = int(str(preferredteamsize).strip())
+                except Exception:
+                    maxsize = None
 
             isfull = False
             if maxsize and len(members) >= maxsize:
                 isfull = True
+
             ismember = userid in members if userid else False
-            projectname = group.get('project_name')
-            if not projectname or not str(projectname).strip():
+            projectname = group.get('project_name') or group.get('projectName') or "Unnamed Group"
+            if not str(projectname).strip():
                 projectname = "Unnamed Group"
 
             groupslist.append({
-                "groupId": str(group['_id']),
+                "groupId": str(group.get('_id')),
                 "creatoruserid": str(group.get('creatoruserid')),
                 "members": members,
                 "memberCount": len(members),
@@ -359,11 +366,11 @@ def get_groups():
                 "requiredskills": group.get('required_skills', []),
                 "createdAt": str(group.get('createdAt', datetime.utcnow()).isoformat())
             })
+
         return jsonify(success=True, groups=groupslist), 200
-    except RuntimeError as runtime_err:
-        print(f"❌ Get groups runtime error (DB unavailable): {re}")
-        return jsonify({"error": "Database unavailable"}), 503
+
     except Exception as e:
+        import traceback
         traceback.print_exc(limit=1)
         return jsonify(error="Could not load groups", details=str(e)), 500
 
@@ -389,7 +396,7 @@ def create_group():
         result = groups_collection.insert_one(group)
         print(f"✅ Group created: {group['project_name']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Group created successfully!", "groupId": str(result.inserted_id)}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Create group runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -421,7 +428,7 @@ def join_group_api():
             return jsonify({"success": True, "message": "Joined successfully!"}), 200
         else:
             return jsonify({"error": "Group not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Join group runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -452,7 +459,7 @@ def leave_group_api():
             return jsonify({"success": True, "message": "Left group successfully!"}), 200
         else:
             return jsonify({"error": "Group not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Leave group runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -472,7 +479,7 @@ def get_my_groups():
         groups_list = [{"groupId": str(g['_id']), "groupName": g.get("project_name", "Unnamed Group")} for g in my_groups]
         print(f"✅ Retrieved {len(groups_list)} groups for user {user_id}")
         return jsonify({"success": True, "groups": groups_list}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get my groups runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -499,7 +506,7 @@ def create_post():
         result = posts_collection.insert_one(post)
         print(f"✅ Post created by: {post['userName']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Post created successfully!", "postId": str(result.inserted_id)}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Create post runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -525,7 +532,7 @@ def get_posts():
         } for p in posts]
         print(f"✅ Retrieved {len(posts_list)} posts")
         return jsonify({"success": True, "posts": posts_list}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get posts runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -557,7 +564,7 @@ def create_question():
         result = questions_collection.insert_one(question)
         print(f"✅ Question created: {question['title'][:50]}... | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Question posted successfully!", "questionId": str(result.inserted_id)}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Create question runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -640,7 +647,7 @@ def get_questions():
                 "itemsPerPage": limit
             }
         }), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get questions runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -678,7 +685,7 @@ def add_answer():
             return jsonify({"success": True, "message": "Answer posted!"}), 200
         else:
             return jsonify({"error": "Question not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Add answer runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -704,7 +711,7 @@ def vote_question():
             return jsonify({"success": True}), 200
         else:
             return jsonify({"error": "Question not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Vote question runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -739,7 +746,7 @@ def accept_answer():
             return jsonify({"success": True, "message": "Answer accepted!"}), 200
         else:
             return jsonify({"error": "Answer not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Accept answer runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -769,7 +776,7 @@ def vote_answer():
             return jsonify({"success": True, "message": f"Answer {vote_type}voted!"}), 200
         else:
             return jsonify({"error": "Answer not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Vote answer runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -832,7 +839,7 @@ def get_notifications():
 
         print(f"✅ Generated {len(notifications_data)} notifications for user {user_id}")
         return jsonify({'success': True, 'notifications': notifications_data}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get notifications runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -871,7 +878,7 @@ def get_discussions():
             })
         print(f"✅ Retrieved {len(discussions_list)} discussions for user {user_id}")
         return jsonify({"success": True, "discussions": discussions_list}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get discussions runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -915,7 +922,7 @@ def create_discussion():
         result = discussions_collection.insert_one(discussion)
         print(f"✅ Discussion created: {discussion['roomName']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Discussion created!", "discussionId": str(result.inserted_id)}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Create discussion runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -952,7 +959,7 @@ def get_messages(discussion_id):
             "topic": discussion.get("topic", ""),
             "groupName": discussion.get("groupName", "")
         }), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get messages runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -1006,7 +1013,7 @@ def send_message():
             return jsonify({"success": True}), 200
         else:
             return jsonify({"error": "Discussion not found"}), 404
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Send message runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -1030,7 +1037,7 @@ def save_chat():
         result = chats_collection.insert_one(chat)
         print(f"✅ Chat saved: {username} in {room}")
         return jsonify({"success": True, "chatId": str(result.inserted_id)}), 201
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Save chat runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
@@ -1050,7 +1057,7 @@ def get_chats():
             c['timestamp'] = c['timestamp'].isoformat() if 'timestamp' in c else None
         print(f"✅ Retrieved {len(chats)} chats")
         return jsonify({"success": True, "chats": chats}), 200
-    except RuntimeError as runtime_err:
+    except RuntimeError as re:
         print(f"❌ Get chats runtime error (DB unavailable): {re}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:

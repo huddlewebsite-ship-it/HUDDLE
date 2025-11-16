@@ -256,7 +256,9 @@
     </button>
 
     <script>
-        const API_URL = '/';
+        // --- FIX 1: Define API_URL correctly ---
+        const API_URL = window.location.origin;
+        
         let currentUser = null;
         let allNotifications = [];
 
@@ -274,11 +276,18 @@
             
             // Back button handler
             document.getElementById('backBtn').addEventListener('click', () => {
-                window.history.back();
+                window.location.href = 'mainpage.html';
             });
+
+            // Start setup for other navigation buttons
+            setupNavigation();
         });
 
-        // Load notifications based on user's joined groups
+        /**
+         * --- FIX 2: Simplified notification loading ---
+         * This now *only* calls your /getnotifications endpoint,
+         * which is the correct single source of truth.
+         */
         async function loadNotifications() {
             const container = document.getElementById('notificationList');
             container.innerHTML = `
@@ -289,115 +298,21 @@
             `;
             
             try {
-                // First try to get actual notifications from backend
-                let notificationsResponse;
-                try {
-                    notificationsResponse = await fetch(`${API_URL}/getnotifications?userId=${currentUser.id}`);
-                } catch (error) {
-                    console.log('No notifications endpoint, falling back to groups-based notifications');
+                const response = await fetch(`${API_URL}/getnotifications?userId=${currentUser.id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
                 }
                 
-                let notifications = [];
+                const data = await response.json();
                 
-                if (notificationsResponse && notificationsResponse.ok) {
-                    const notificationsData = await notificationsResponse.json();
-                    if (notificationsData.success && notificationsData.notifications) {
-                        notifications = notificationsData.notifications;
-                        console.log(`✅ Loaded ${notifications.length} backend notifications`);
-                    }
+                if (data.success && data.notifications) {
+                    allNotifications = data.notifications;
+                    console.log(`✅ Loaded ${allNotifications.length} backend notifications`);
+                    renderNotifications(allNotifications);
+                } else {
+                    throw new Error(data.error || 'Failed to parse notifications');
                 }
-                
-                // If no backend notifications or empty, create from joined groups
-                if (notifications.length === 0) {
-                    const groupsResponse = await fetch(`${API_URL}/getavailablegroups?userId=${currentUser.id}`);
-                    const groupsData = await groupsResponse.json();
-                    
-                    if (groupsData.success && groupsData.groups) {
-                        const joinedGroups = groupsData.groups.filter(group => 
-                            group.members && group.members.includes(currentUser.id)
-                        );
-                        
-                        if (joinedGroups.length === 0) {
-                            container.innerHTML = `
-                                <div class="empty-state">
-                                    <i class="fas fa-bell-slash"></i>
-                                    <h3>No notifications</h3>
-                                    <p>You haven't joined any groups yet! Start by browsing available groups.</p>
-                                    <button onclick="window.location.href='mainpage.html'" 
-                                            style="margin-top:15px;padding:12px 24px;background:var(--accent1);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">
-                                        Browse Groups
-                                    </button>
-                                </div>
-                            `;
-                            return;
-                        }
-                        
-                        // Create comprehensive notifications from groups
-                        notifications = joinedGroups.map(group => {
-                            const joinDate = group.createdAt ? new Date(group.createdAt) : new Date();
-                            const timeAgo = getTimeAgo(joinDate);
-                            const isCreator = group.creatoruserid === currentUser.id;
-                            const memberCount = group.members ? group.members.length : 0;
-                            const maxMembers = group.maxMembers || 0;
-                            const hasNewMembers = memberCount > 1;
-                            
-                            let content = isCreator 
-                                ? `Your group "${group.projectname}" now has ${memberCount} member${memberCount !== 1 ? 's' : ''}`
-                                : `You joined the group "${group.projectname}"`;
-                            
-                            if (hasNewMembers && !isCreator) {
-                                content = `New members joined "${group.projectname}" (${memberCount}/${maxMembers || '∞'})`;
-                            }
-                            
-                            return {
-                                id: `group-${group.groupId}`,
-                                type: 'group',
-                                name: group.projectname,
-                                avatar: group.projectname.substring(0, 2).toUpperCase(),
-                                time: timeAgo,
-                                content: content,
-                                unread: false, // Track read status in localStorage
-                                groupId: group.groupId,
-                                actionUrl: `mainpage.html#group-${group.groupId}`,
-                                createdAt: joinDate
-                            };
-                        });
-                        
-                        // Add some simulated activity notifications
-                        const activityNotifications = [
-                            {
-                                id: 'activity-1',
-                                type: 'activity',
-                                name: 'Platform Update',
-                                avatar: 'HU',
-                                time: '2 hours ago',
-                                content: '🎉 New Q&A features are now live! Try asking your first question.',
-                                unread: true,
-                                actionUrl: 'qa.html',
-                                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-                            },
-                            {
-                                id: 'activity-2',
-                                type: 'tip',
-                                name: 'Quick Tip',
-                                avatar: '💡',
-                                time: '1 day ago',
-                                content: 'Pro tip: Use tags like #java #python when asking questions to get better answers!',
-                                unread: false,
-                                actionUrl: 'qa.html',
-                                createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
-                            }
-                        ];
-                        
-                        notifications = [...activityNotifications, ...notifications];
-                        console.log(`✅ Created ${notifications.length} group-based notifications`);
-                    } else {
-                        throw new Error('Failed to load groups');
-                    }
-                }
-                
-                allNotifications = notifications;
-                renderNotifications(notifications);
                 
             } catch (error) {
                 console.error('Error loading notifications:', error);
@@ -405,7 +320,7 @@
                     <div class="empty-state">
                         <i class="fas fa-exclamation-circle"></i>
                         <h3>Error loading notifications</h3>
-                        <p>Please check your connection and try again</p>
+                        <p>${escapeHtml(error.message)}</p>
                         <button onclick="loadNotifications()" 
                                 style="margin-top:15px;padding:12px 24px;background:var(--accent1);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">
                             Retry
@@ -418,10 +333,8 @@
         function renderNotifications(notifications) {
             const container = document.getElementById('notificationList');
             
-            // Load read status from localStorage
             const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
             
-            // Update unread status based on localStorage
             notifications.forEach(notification => {
                 notification.unread = !readStatus[notification.id];
             });
@@ -441,14 +354,16 @@
                 return;
             }
 
-            // Sort by createdAt (most recent first)
             notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
             container.innerHTML = notifications.map(notif => {
                 const isUnread = notif.unread;
                 const typeBadge = notif.type === 'group' ? '<span class="notification-type">Group</span>' : 
-                                 notif.type === 'activity' ? '<span class="notification-type">Activity</span>' : 
-                                 '<span class="notification-type">Update</span>';
+                                  notif.type === 'activity' ? '<span class="notification-type">Activity</span>' : 
+                                  '<span class="notification-type">Update</span>';
+
+                // --- FIX 3: Use getTimeAgo for consistent time formatting ---
+                const timeAgo = getTimeAgo(new Date(notif.createdAt));
 
                 return `
                     <div class="notification-card ${isUnread ? 'unread' : ''}" data-id="${notif.id}">
@@ -458,7 +373,7 @@
                                 <div class="notification-name">
                                     ${escapeHtml(notif.name)}${typeBadge}
                                 </div>
-                                <div class="notification-time">${notif.time}</div>
+                                <div class="notification-time">${timeAgo}</div>
                             </div>
                         </div>
                         <div class="notification-content">
@@ -469,7 +384,7 @@
                                 ${notif.actionUrl ? 'View' : 'Dismiss'}
                             </button>
                             ${isUnread ? `
-                                <button class="btn btn-secondary mark-read" data-id="${notif.id}" onclick="markAsRead('${notif.id}', event)">
+                                <button class="btn btn-secondary mark-read" data-id="${notif.id}">
                                     Mark Read
                                 </button>
                             ` : ''}
@@ -478,7 +393,6 @@
                 `;
             }).join('');
 
-            // Show/hide mark all read button
             const unreadCount = notifications.filter(n => n.unread).length;
             const markAllBtn = document.getElementById('markAllReadBtn');
             if (unreadCount > 0) {
@@ -488,7 +402,6 @@
                 markAllBtn.style.display = 'none';
             }
 
-            // Add event listeners for mark read buttons
             document.querySelectorAll('.mark-read').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -497,12 +410,11 @@
                 });
             });
 
-            // Add click handlers for notification cards
             document.querySelectorAll('.notification-card').forEach(card => {
                 card.addEventListener('click', function(e) {
                     if (!e.target.closest('.btn')) {
                         const notificationId = this.getAttribute('data-id');
-                        const actionUrl = notifications.find(n => n.id === notificationId)?.actionUrl;
+                        const actionUrl = allNotifications.find(n => n.id === notificationId)?.actionUrl;
                         if (actionUrl) {
                             viewNotification(notificationId, actionUrl);
                         }
@@ -512,13 +424,10 @@
         }
 
         function viewNotification(notificationId, actionUrl) {
-            // Mark as read
             markAsRead(notificationId);
             
-            // Navigate to action URL if provided
             if (actionUrl) {
                 if (actionUrl.includes('mainpage.html')) {
-                    // For group notifications, store the group ID and navigate
                     const groupId = actionUrl.split('#group-')[1];
                     if (groupId) {
                         localStorage.setItem('selectedGroupId', groupId);
@@ -530,26 +439,20 @@
                     window.location.href = actionUrl;
                 }
             }
-            
-            showNotification('Notification viewed');
         }
 
         function markAsRead(notificationId, event) {
             if (event) event.stopPropagation();
             
-            // Update local state
             const notification = allNotifications.find(n => n.id === notificationId);
             if (notification && notification.unread) {
                 notification.unread = false;
                 
-                // Update localStorage
                 const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
                 readStatus[notificationId] = true;
                 localStorage.setItem(`notifications-read-${currentUser.id}`, JSON.stringify(readStatus));
                 
-                // Re-render to update UI
                 renderNotifications(allNotifications);
-                
                 showNotification('Marked as read');
             }
         }
@@ -558,7 +461,6 @@
             const unreadNotifications = allNotifications.filter(n => n.unread);
             if (unreadNotifications.length === 0) return;
             
-            // Mark all as read in localStorage
             const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
             allNotifications.forEach(notification => {
                 readStatus[notification.id] = true;
@@ -586,6 +488,7 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const map = {
                 '&': '&amp;',
                 '<': '&lt;',
@@ -615,20 +518,22 @@
             notification.textContent = message;
             document.body.appendChild(notification);
             
-            // Slide in animation
             requestAnimationFrame(() => {
                 notification.style.transform = 'translateX(0)';
             });
             
-            // Auto remove
             setTimeout(() => {
                 notification.style.transform = 'translateX(100%)';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
 
-        // Universal navigation fixes
-        document.addEventListener('DOMContentLoaded', function() {
+        /**
+         * --- FIX 4: Corrected navigation script ---
+         * This runs once and sets up listeners for any nav
+         * buttons that might be on the page.
+         */
+        function setupNavigation() {
             const pageRoutes = {
                 'mainpage': 'mainpage.html',
                 'profile': 'profile.html',
@@ -639,7 +544,6 @@
                 'chat': 'chatpage.html'
             };
             
-            // Fix data-page navigation
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -650,8 +554,7 @@
                 });
             });
             
-            // Fix logout
-            document.querySelectorAll('onclick="logout()", .logout-btn').forEach(btn => {
+            document.querySelectorAll('.logout-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     localStorage.clear();
@@ -659,7 +562,6 @@
                 });
             });
             
-            // Fix home/logo link
             document.querySelectorAll('a[href], .logo, .brand').forEach(link => {
                 if (link.textContent.toLowerCase().includes('huddle')) {
                     if (!link.classList.contains('logo')) {
@@ -668,7 +570,7 @@
                     }
                 }
             });
-        });
+        }
     </script>
 </body>
 </html>

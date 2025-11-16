@@ -420,6 +420,7 @@
             flex-wrap: wrap;
         }
 
+        /* .btn styles are duplicated, but we'll keep the second, more specific one */
         .btn {
             padding: 12px 24px;
             border: none;
@@ -665,7 +666,6 @@
             </div>
 
             <div class="content-grid">
-                <!-- About Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-user"></i> About Me</h2>
@@ -678,7 +678,6 @@
                     </p>
                 </div>
 
-                <!-- Personal Info -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-info-circle"></i> Personal Info</h2>
@@ -700,7 +699,6 @@
                     </div>
                 </div>
 
-                <!-- Academic Info -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-graduation-cap"></i> Academic Info</h2>
@@ -718,7 +716,6 @@
                     </div>
                 </div>
 
-                <!-- Skills -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-code"></i> Skills</h2>
@@ -727,11 +724,9 @@
                         </button>
                     </div>
                     <div class="skills-grid" id="skillsGrid">
-                        <!-- Dynamic skills loaded here -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- Interests -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-heart"></i> Interests</h2>
@@ -749,7 +744,6 @@
                     </div>
                 </div>
 
-                <!-- Social Links -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title"><i class="fas fa-share-alt"></i> Social Links</h2>
@@ -775,7 +769,6 @@
             </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="action-buttons">
             <button class="btn btn-secondary" onclick="window.location.href='mainpage.html'">
                 <i class="fas fa-arrow-left"></i> Back to Home
@@ -789,7 +782,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -797,14 +789,13 @@
                 <button class="close" onclick="closeModal()">&times;</button>
             </div>
             <div id="modalBody">
-                <!-- Dynamic content will be inserted here -->
-            </div>
+                </div>
         </div>
     </div>
 
     <script>
-        // API Configuration - CONNECT TO FLASK BACKEND
-        const API_URL = '/'; 
+        // --- FIX 1: Correctly define API_URL ---
+        const API_URL = window.location.origin;
 
         // Canvas background animation
         const canvas = document.getElementById('hero-canvas');
@@ -855,27 +846,22 @@
             canvas.height = window.innerHeight;
         });
 
-        // --- NEW ---
-        // Step 1: Get the User ID for the profile being viewed
+        // Get the User ID for the profile being viewed
         function getUserIdForProfile() {
-            // Check URL param first
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('userId');
             if (userIdFromUrl) {
                 console.log(`Found userId in URL: ${userIdFromUrl}`);
                 return userIdFromUrl;
             }
-
-            // Fallback to logged-in user from localStorage
             console.log('No userId in URL, falling back to localStorage.');
-            return getCurrentLoggedInUserId(); // Use the renamed function
+            return getCurrentLoggedInUserId(); 
         }
 
-        // Renamed from getCurrentUserId to be more specific
+        // Get the ID of the person currently logged in
         function getCurrentLoggedInUserId() {
             try {
                 const user = JSON.parse(localStorage.getItem('huddleUser') || '{}');
-                // Check for all possible ID fields
                 return user.id || user._id || user.userId || null;
             } catch (e) {
                 console.error('Error parsing user data:', e);
@@ -883,109 +869,83 @@
             }
         }
 
-        // --- UPDATED ---
-        // Step 2: Update Profile Loader
+        // --- FIX 2: Refactored Profile Loading Logic ---
         async function loadProfileFromDB() {
-            let profileDataToLoad = null; // Store the loaded profile data
-
-            try {
-                // Use the new helper function to get the correct User ID
-                const profileUserId = getUserIdForProfile();
-                
-                if (!profileUserId) {
-                    console.log('No user ID found, redirecting to login...');
-                    window.location.href = '/login.html'; // <-- FIXED
-                    return;
-                }
-
-                console.log(`Loading profile for userId: ${profileUserId}`);
-                const response = await fetch(`${API_URL}/getuser/${profileUserId}`);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        profileDataToLoad = data.user;
-                        populateProfile(profileDataToLoad);
-                        localStorage.setItem('huddleProfileData', JSON.stringify(profileDataToLoad));  // Cache full DB data
-                        console.log('✅ Profile loaded from database');
-                    } else {
-                         throw new Error(data.error || 'Failed to load profile from DB');
-                    }
-                } else if (response.status === 404) {
-                    console.log('Profile not found in database, using localStorage fallback');
-                    // Fall through to localStorage fallback
-                } else {
-                    console.error('Error loading profile:', response.statusText);
-                    // Fall through to localStorage fallback
-                }
-            } catch (error) {
-                console.error('Error loading profile from database:', error);
-                // Fall through to localStorage fallback
+            const profileUserId = getUserIdForProfile();
+            const loggedInUserId = getCurrentLoggedInUserId();
+            
+            if (!profileUserId) {
+                console.log('No user ID found, redirecting to login...');
+                window.location.href = 'login.html'; // <-- FIXED relative path
+                return;
             }
 
-            // Fallback to localStorage (only if DB load failed and we are viewing our own profile)
-            if (!profileDataToLoad) {
-                const profileUserId = getUserIdForProfile();
-                const loggedInUserId = getCurrentLoggedInUserId();
-
-                // Only use localStorage fallback if the profile we're trying to view
-                // is our own and the DB call failed.
-                if (profileUserId === loggedInUserId) {
-                    console.log('Using localStorage fallback for own profile.');
-                    let profileData = null;
-                    const savedProfile = localStorage.getItem('huddleProfileData');
-                    const savedUser = localStorage.getItem('huddleUser');
-                    if (savedProfile) {
-                        profileData = JSON.parse(savedProfile);
-                    } else if (savedUser) {
-                        profileData = JSON.parse(savedUser);
-                    }
-                    if (profileData) {
-                        profileDataToLoad = profileData;
-                        populateProfile(profileDataToLoad);
-                    } else {
-                        console.log('No profile data available, redirecting to login');
-                        window.location.href = '/login.html'; // <-- FIXED
-                        return; // Exit
-                    }
-                } else {
-                    // We are viewing someone else's profile and the fetch failed.
-                    // Do not show stale data from localStorage.
-                    console.log('Failed to fetch user profile and not viewing self. Cannot display profile.');
-                    document.getElementById('profileNameDisplay').textContent = 'User Not Found';
-                    document.getElementById('profileTitleDisplay').textContent = '...';
-                    document.getElementById('bioText').textContent = 'Could not load this user\'s profile. They may not exist or an error occurred.';
-                    // Hide all sections
-                    document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
-                    return; // Exit
-                }
-            }
-
-            // --- NEW ---
-            // Step 3: Secure Editing
-            // This runs after profileDataToLoad is set from either DB or localStorage
-            if (profileDataToLoad) {
-                const loggedInUserId = getCurrentLoggedInUserId();
-                const profileOwnerId = profileDataToLoad.id || profileDataToLoad._id || profileDataToLoad.userId;
+            // --- This is the key logic ---
+            // If we are viewing our own profile, just use localStorage data.
+            // This avoids the "User Not Found" error when no ID is in the URL.
+            if (profileUserId === loggedInUserId) {
+                console.log('Loading profile from localStorage (own profile).');
+                let profileData = null;
+                const savedProfile = localStorage.getItem('huddleProfileData'); // Check for full profile
+                const savedUser = localStorage.getItem('huddleUser'); // Fallback to login data
                 
-                const isOwner = (loggedInUserId === profileOwnerId);
-                console.log(`Logged in as: ${loggedInUserId}, Viewing profile: ${profileOwnerId}. Is owner? ${isOwner}`);
-                toggleEditControls(isOwner);
+                if (savedProfile) {
+                    profileData = JSON.parse(savedProfile);
+                } else if (savedUser) {
+                    profileData = JSON.parse(savedUser);
+                }
+
+                if (profileData) {
+                    populateProfile(profileData);
+                    toggleEditControls(true); // Show edit buttons
+                } else {
+                    // This should not happen if they are logged in, but as a safeguard:
+                    console.log('No profile data available, redirecting to login');
+                    window.location.href = 'login.html'; // <-- FIXED relative path
+                }
             } else {
-                // Should be covered by "User Not Found" case, but as a fallback, disable all controls.
-                toggleEditControls(false);
+                // If the URL ID is different from ours, fetch that user's profile.
+                console.log(`Loading profile for OTHER user: ${profileUserId}`);
+                try {
+                    const response = await fetch(`${API_URL}/getuser/${profileUserId}`);
+                    if (!response.ok) {
+                         // This catches 404 "User Not Found" from the server
+                        throw new Error(`User not found (status: ${response.status})`);
+                    }
+
+                    const data = await response.json();
+                    if (data.success && data.user) {
+                        populateProfile(data.user);
+                        toggleEditControls(false); // Hide edit buttons
+                    } else {
+                        throw new Error(data.error || 'Failed to parse profile data');
+                    }
+                } catch (error) {
+                    console.error('Error loading other user profile:', error);
+                    showErrorState(); // Show the "User Not Found" UI
+                }
             }
         }
+        
+        // --- NEW HELPER ---
+        // This function displays the "User Not Found" error from your screenshot
+        function showErrorState() {
+             document.getElementById('profileNameDisplay').textContent = 'User Not Found';
+             document.getElementById('profileTitleDisplay').textContent = '...';
+             document.getElementById('bioText').textContent = 'Could not load this user\'s profile. They may not exist or an error occurred.';
+             // Hide all sections
+             document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+             // Hide all edit buttons
+             toggleEditControls(false);
+        }
 
-        // --- NEW ---
-        // Step 3 (Helper): Show/hide all edit controls based on ownership
+
+        // Show/hide all edit controls based on ownership
         function toggleEditControls(isOwner) {
-            // Get all edit buttons
             const editButtons = document.querySelectorAll(
                 '.edit-cover-btn, .edit-pic-btn, .edit-name-btn, .edit-section-btn, .btn-primary, .btn-danger'
             );
             
-            // Toggle visibility
             editButtons.forEach(btn => {
                 if (isOwner) {
                     btn.classList.remove('hidden');
@@ -994,45 +954,29 @@
                 }
             });
 
-            // Specific logic for file inputs and remove buttons
             const coverInput = document.getElementById('coverInput');
             const picInput = document.getElementById('picInput');
             const coverContainer = document.getElementById('coverPhotoContainer');
             const picContainer = document.getElementById('profilePicContainer');
             
             if (isOwner) {
-                // Enable cover photo click
                 coverContainer.classList.add('editable');
                 coverContainer.onclick = () => coverInput.click();
-                
-                // Enable profile pic click (via the button)
                 picContainer.querySelector('.edit-pic-btn').onclick = () => picInput.click();
-                
-                // Show skill remove buttons
                 document.querySelectorAll('.skill-remove').forEach(btn => btn.classList.remove('hidden'));
-                
-                // Make skills hoverable/clickable
-                 document.querySelectorAll('.skill-item').forEach(item => item.classList.add('editable'));
+                document.querySelectorAll('.skill-item').forEach(item => item.classList.add('editable'));
             } else {
-                // Disable cover photo click
                 coverContainer.classList.remove('editable');
                 coverContainer.onclick = null;
-                
-                // Disable profile pic click
                 picContainer.querySelector('.edit-pic-btn').onclick = null;
-
-                // Hide skill remove buttons
                 document.querySelectorAll('.skill-remove').forEach(btn => btn.classList.add('hidden'));
-
-                // Make skills static
-                 document.querySelectorAll('.skill-item').forEach(item => item.classList.remove('editable'));
+                document.querySelectorAll('.skill-item').forEach(item => item.classList.remove('editable'));
             }
         }
 
 
-        // Populate profile with data (mapped to backend fields; overrides hardcodes)
+        // Populate profile with data
         function populateProfile(profileData) {
-            // Name (from fullName)
             if (profileData.fullName) {
                 document.getElementById('profileNameDisplay').textContent = profileData.fullName;
                 const initial = profileData.fullName.charAt(0).toUpperCase();
@@ -1042,43 +986,37 @@
                 }
             }
 
-            // Title (construct from branch + academicYear)
             if (profileData.branch || profileData.academicYear) {
                 const title = `${profileData.branch || ''} Student${profileData.academicYear ? ` - ${profileData.academicYear}` : ''}`.trim();
                 document.getElementById('profileTitleDisplay').textContent = title || 'Student Profile';
             }
 
-            // Bio
             if (profileData.bio) {
                 document.getElementById('bioText').textContent = profileData.bio;
             } else {
-                document.getElementById('bioText').textContent = 'Passionate student focused on learning and building innovative projects.';  // DB default
+                document.getElementById('bioText').textContent = 'Passionate student focused on learning and building innovative projects.';
             }
 
-            // Personal Info (from DB)
             if (profileData.email) document.getElementById('emailValue').textContent = profileData.email;
             if (profileData.university) document.getElementById('universityValue').textContent = profileData.university;
             if (profileData.branch) document.getElementById('branchValue').textContent = profileData.branch;
 
-            // Academic Info (degree hardcoded as it's not in DB; year from academicYear)
-            document.getElementById('degreeValue').textContent = 'BTech Computer Science';  // Add to DB/signup if editable
+            document.getElementById('degreeValue').textContent = 'BTech Computer Science'; 
             if (profileData.academicYear) document.getElementById('academicYearValue').textContent = profileData.academicYear;
 
-            // Skills (from DB array)
             const skillsGrid = document.getElementById('skillsGrid');
             skillsGrid.innerHTML = ''; // Clear defaults
             if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {
                 profileData.skills.forEach(skill => {
                     const skillItem = document.createElement('div');
-                    skillItem.className = 'skill-item'; // 'editable' class added by toggleEditControls
-                    skillItem.innerHTML = `${skill} <button class="skill-remove hidden" onclick="removeSkill(this)">×</button>`;
+                    skillItem.className = 'skill-item';
+                    skillItem.innerHTML = `${escapeHtml(skill)} <button class="skill-remove hidden" onclick="removeSkill(this)">×</button>`;
                     skillsGrid.appendChild(skillItem);
                 });
             } else {
                 skillsGrid.innerHTML = '<p class="info-value">No skills listed yet.</p>';
             }
 
-            // Photos (from DB URLs)
             if (profileData.profilePhotoUrl) {
                 const profilePic = document.getElementById('profilePic');
                 profilePic.style.backgroundImage = `url(${profileData.profilePhotoUrl})`;
@@ -1091,12 +1029,12 @@
                 coverPhoto.src = profileData.coverPhotoUrl;
                 coverPhoto.classList.add('active');
             }
-
-            // Social links (static/client-only; extend DB if needed)
-            // Defaults remain as-is; update via editSocialLinks() and save locally or add to backend
+            // Social links are static for now, can be populated from DB if fields exist
         }
 
-        // Update social link href (unchanged)
+        // --- All other functions (edit modals, save, upload) ---
+        // (These are unchanged as they relate to *editing*, not *loading*)
+
         function updateSocialLink(linkId, url) {
             const link = document.getElementById(linkId);
             if (!url) {
@@ -1116,7 +1054,6 @@
             }
         }
 
-        // Edit functions (updated to use backend fields in saveProfile; local changes only for non-DB fields)
         function editNameAndTitle() {
             const currentName = document.getElementById('profileNameDisplay').textContent;
             const currentTitle = document.getElementById('profileTitleDisplay').textContent;
@@ -1159,7 +1096,6 @@
             
             closeModal();
             showNotification('✅ Name and title updated!');
-            // Trigger full save to DB for fullName
             saveProfile();
         }
 
@@ -1186,7 +1122,7 @@
             document.getElementById('bioText').textContent = newBio;
             closeModal();
             showNotification('✅ About section updated!');
-            saveProfile();  // Sync to DB
+            saveProfile(); 
         }
 
         function editPersonalInfo() {
@@ -1224,8 +1160,7 @@
             document.getElementById('branchValue').textContent = document.getElementById('editBranch').value;
             closeModal();
             showNotification('✅ Personal info updated!');
-            // Note: email/university/branch not updatable in current /updateprofile; extend backend if needed
-            saveProfile();  // For other fields
+            saveProfile();
         }
 
         function editAcademicInfo() {
@@ -1257,7 +1192,6 @@
             document.getElementById('academicYearValue').textContent = document.getElementById('editYear').value;
             closeModal();
             showNotification('✅ Academic info updated!');
-            // academicYear can be added to /updateprofile if needed
             saveProfile();
         }
 
@@ -1305,14 +1239,11 @@
             
             closeModal();
             showNotification('✅ Social links updated!');
-            // Social not in DB; save locally if needed
         }
         
-        // No changes to editInterests - it's fine
         function editInterests() {
             showNotification('Interests editing coming soon!');
         }
-
 
         function addSkill() {
             const modalBody = document.getElementById('modalBody');
@@ -1334,29 +1265,27 @@
         function saveSkill() {
             const skillName = document.getElementById('newSkill').value.trim();
             if (skillName) {
-                // Clear placeholder if it exists
                 const skillsGrid = document.getElementById('skillsGrid');
                 if (skillsGrid.querySelector('p')) {
                     skillsGrid.innerHTML = '';
                 }
 
                 const skillItem = document.createElement('div');
-                skillItem.className = 'skill-item editable'; // Add editable class
+                skillItem.className = 'skill-item editable';
                 skillItem.innerHTML = `
-                    ${skillName} <button class="skill-remove" onclick="removeSkill(this)">×</button>
+                    ${escapeHtml(skillName)} <button class="skill-remove" onclick="removeSkill(this)">×</button>
                 `;
                 skillsGrid.appendChild(skillItem);
                 closeModal();
                 showNotification('✅ Skill added!');
-                saveProfile();  // Sync skills to DB
+                saveProfile(); 
             }
         }
 
         function removeSkill(button) {
-            // No confirmation needed per original code
             button.parentElement.remove();
             showNotification('✅ Skill removed!');
-            saveProfile();  // Sync updated skills to DB
+            saveProfile(); 
         }
 
         function uploadCover(input) {
@@ -1367,7 +1296,7 @@
                     coverPhoto.src = e.target.result;
                     coverPhoto.classList.add('active');
                     showNotification('✅ Cover photo updated!');
-                    saveProfile();  // Sync coverPhotoUrl (upload to server first for real URL)
+                    saveProfile(); 
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1383,7 +1312,7 @@
                     profilePic.style.backgroundPosition = 'center';
                     profilePic.textContent = '';
                     showNotification('✅ Profile picture updated!');
-                    saveProfile();  // Sync profilePhotoUrl (upload to server first for real URL)
+                    saveProfile(); 
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1393,11 +1322,10 @@
             document.getElementById('editModal').style.display = 'none';
         }
 
-        // Save profile to database (uses backend fields)
+        // Save profile to database
         async function saveProfile() {
-            // Find save button
             const saveBtn = document.querySelector('.btn-primary[onclick="saveProfile()"]');
-            if (!saveBtn) return; // Not on this page or button not found
+            if (!saveBtn) return; 
 
             const originalText = saveBtn.innerHTML;
             saveBtn.disabled = true;
@@ -1407,14 +1335,12 @@
             const skills = Array.from(skillsElements).map(el => el.textContent.replace('×', '').trim());
 
             const profileData = {
-                userId: getCurrentLoggedInUserId(), // Save actions always pertain to the logged in user
+                userId: getCurrentLoggedInUserId(), 
                 fullName: document.getElementById('profileNameDisplay').textContent,
                 bio: document.getElementById('bioText').textContent,
                 skills: skills,
-                profilePhotoUrl: document.getElementById('profilePic').style.backgroundImage ? document.getElementById('profilePic').style.backgroundImage.slice(5, -2) : '',  // Base64 or server URL
+                profilePhotoUrl: document.getElementById('profilePic').style.backgroundImage ? document.getElementById('profilePic').style.backgroundImage.slice(5, -2) : '', 
                 coverPhotoUrl: document.getElementById('coverPhoto').src || '',
-                // university, branch, academicYear, email: Add to backend update if editable
-                // Social/degree/interests: Client-only for now
             };
 
             try {
@@ -1430,14 +1356,18 @@
 
                 if (response.ok && data.success) {
                     showNotification('✅ Profile saved to database!');
-                    localStorage.setItem('huddleProfileData', JSON.stringify(profileData));
+                    // Re-cache the latest saved data
+                    const updatedUser = { ...JSON.parse(localStorage.getItem('huddleUser')), ...profileData };
+                    localStorage.setItem('huddleUser', JSON.stringify(updatedUser));
+                    localStorage.setItem('huddleProfileData', JSON.stringify(updatedUser));
                 } else {
                     throw new Error(data.error || 'Failed to save profile');
                 }
             } catch (error) {
                 console.error('Save profile error:', error);
                 showNotification('❌ Network error - saved locally only');
-                localStorage.setItem('huddleProfileData', JSON.stringify(profileData));
+                const updatedUser = { ...JSON.parse(localStorage.getItem('huddleUser')), ...profileData };
+                localStorage.setItem('huddleProfileData', JSON.stringify(updatedUser));
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalText;
@@ -1445,10 +1375,9 @@
         }
 
         function logout() {
-            // No confirmation needed per original code
             localStorage.removeItem('huddleUser');
             localStorage.removeItem('huddleProfileData');
-            window.location.href = '/login.html'; // <-- FIXED
+            window.location.href = 'login.html'; // <-- FIXED relative path
         }
 
         function showNotification(message) {
@@ -1470,7 +1399,7 @@
             document.body.appendChild(notification);
 
             setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
+                notification.style.animation = 'slideOut 0.3s ease forwards';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
@@ -1482,25 +1411,23 @@
             }
         }
 
-        // Load profile data on page load (use DOMContentLoaded for reliability)
+        // Load profile data on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadProfileFromDB();
         });
 
-        // =========== BUG FIX: NAVIGATION (UNIVERSAL) ===========
-        // This navigation logic was already present and is unchanged.
+        // Universal navigation fixes
         document.addEventListener('DOMContentLoaded', function() {
             const pageRoutes = {
-                'mainpage': '/mainpage.html',
-                'profile': '/profile.html',
-                'qa': '/qa.html',
-                'discuss': '/discuss-room.html',
-                'groups': '/group-creationpage.html',
-                'notifications': '/notifications.html',
-                'chat': '/chatpage.html'
+                'mainpage': 'mainpage.html',
+                'profile': 'profile.html',
+                'qa': 'qa.html',
+                'discuss': 'discuss-room.html',
+                'groups': 'group-creationpage.html',
+                'notifications': 'notifications.html',
+                'chat': 'chatpage.html'
             };
 
-            // Fix data-page navigation
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1509,24 +1436,30 @@
                 });
             });
 
-            // Fix logout (Note: The main logout button is now handled by toggleEditControls)
-            // This targets other potential logout buttons
             document.querySelectorAll('#logoutBtn, .logout-btn').forEach(btn => {
                  btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     localStorage.clear();
-                    window.location.href = '/login.html';
+                    window.location.href = 'login.html'; // <-- FIXED relative path
                 });
             });
 
-            // Fix home/logo link
             document.querySelectorAll('a[href="#"], a[href=""], .logo, .brand').forEach(link => {
                 if (link.textContent.toLowerCase().includes('huddle') || link.classList.contains('logo')) {
                     link.style.cursor = 'pointer';
-                    link.addEventListener('click', () => window.location.href = '/mainpage.html');
+                    link.addEventListener('click', () => window.location.href = 'mainpage.html');
                 }
             });
         });
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;', '<': '&lt;', '>': '&gt;',
+                '"': '&quot;', "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
     </script>
 </body>
 </html>

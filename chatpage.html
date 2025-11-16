@@ -318,10 +318,11 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
     <script>
-        const API_URL = '/';
+        // --- 1. Define API_URL correctly ---
+        const API_URL = window.location.origin;
+
         let currentDiscussion = null;
         let currentUser = null;
-        let messageRefreshInterval = null;
         let socket = null;
         let typingTimer;
         let isTyping = false;
@@ -336,37 +337,72 @@
                 window.location.href = 'login.html';
                 return;
             }
-            
             currentUser = JSON.parse(userStr);
             
-            // Get current discussion from localStorage
             const discussionStr = localStorage.getItem('currentDiscussion');
             if (!discussionStr) {
                 alert('No discussion selected!');
                 window.location.href = 'discuss-room.html';
                 return;
             }
-            
+            // This only has {discussionId, roomName}
             currentDiscussion = JSON.parse(discussionStr);
             
-            // Initialize Socket.IO connection
+            // --- 2. Load full details (including groupId) FIRST ---
+            await loadDiscussionDetails();
+            
+            // --- 3. Now we can connect to the socket ---
             initSocketIO();
             
-            // Load discussion details and messages
-            await loadDiscussionDetails();
-            loadMessages();
-            
-            // Auto-refresh messages every 3 seconds
-            messageRefreshInterval = setInterval(loadMessages, 3000);
+            // --- 4. And load the message history ---
+            await loadMessages();
+        }
+
+        /**
+         * Fetches the full discussion details.
+         * This gets the 'groupId', 'topic', and 'participants'
+         * which are all missing from localStorage.
+         */
+        async function loadDiscussionDetails() {
+            try {
+                // We pass userId for auth on /getdiscussions
+                const response = await fetch(`${API_URL}/getdiscussions?userId=${currentUser.id}`); 
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error);
+
+                // Find the specific discussion we clicked on
+                const discussionDetails = data.discussions.find(
+                    d => d.discussionId === currentDiscussion.discussionId
+                );
+
+                if (!discussionDetails) {
+                    throw new Error('Could not find this discussion.');
+                }
+
+                // Merge the full details (like groupId) into our object
+                currentDiscussion = { ...currentDiscussion, ...discussionDetails };
+
+                // Now update the header
+                document.getElementById('roomName').textContent = currentDiscussion.roomName || 'Chat Room';
+                document.getElementById('roomTopic').textContent = currentDiscussion.topic || 'No topic';
+                updateParticipantsCount(currentDiscussion.participants);
+
+            } catch (error) {
+                console.error('Failed to load discussion details:', error);
+                document.getElementById('roomName').textContent = 'Error';
+                document.getElementById('roomTopic').textContent = error.message;
+            }
         }
 
         function initSocketIO() {
+            // This check will now pass
             if (!currentDiscussion || !currentDiscussion.groupId) {
                 console.error('No group ID for socket connection');
                 return;
             }
 
             try {
+                // This 'io' function is now defined by the script tag above
                 socket = io(API_URL, {
                     transports: ['websocket', 'polling'],
                     timeout: 20000
@@ -389,8 +425,10 @@
                 // Listen for new messages
                 socket.on('newMessage', (message) => {
                     console.log('📨 New message received:', message);
-                    appendMessage(message);
-                    scrollToBottom();
+                    // Only append if it's for this specific discussion
+                    if (message.discussionId === currentDiscussion.discussionId) {
+                        appendMessage(message);
+                    }
                 });
 
                 // Typing indicators
@@ -402,7 +440,6 @@
                     }
                 });
 
-                // Error handling
                 socket.on('error', (error) => {
                     console.error('Socket error:', error);
                 });
@@ -412,22 +449,21 @@
             }
         }
 
-        async function loadDiscussionDetails() {
-            document.getElementById('roomName').textContent = currentDiscussion.roomName || 'Chat Room';
-        }
-
         async function loadMessages() {
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '<div class="loading">Loading messages...</div>';
             
             try {
+                // This fetch is correct, it needs the userId for auth
                 const response = await fetch(`${API_URL}/getmessages/${currentDiscussion.discussionId}?userId=${encodeURIComponent(currentUser.id)}`);
                 const data = await response.json();
                 
                 if (data.success && data.messages) {
                     displayMessages(data.messages);
-                    updateParticipantsCount(data.messages);
                 } else {
+                    // This handles "Access denied" or other errors from the API
+                    if (data.error) throw new Error(data.error);
+                    
                     container.innerHTML = `
                         <div class="no-messages">
                             <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; color: #cbd5e0;"></i>
@@ -442,33 +478,24 @@
                     <div style="text-align:center;padding:40px;color:#ff6b6b">
                         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
                         <div>Error loading messages</div>
+                        <p style="color:#555;font-size:0.9em;">${escapeHtml(error.message)}</p>
                         <button onclick="loadMessages()" style="margin-top:15px;padding:10px 20px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer">Retry</button>
                     </div>
                 `;
             }
         }
 
-        // Flickerless anti-repaint function
         function displayMessages(messages) {
             const container = document.getElementById('messagesContainer');
-            const oldHtml = container.innerHTML;
             
-            // Get last message ID to check if new content
-            const lastMessageId = container.lastChild ? 
-                container.lastChild.getAttribute('data-id') : null;
-            const lastLoadedId = messages.length > 0 ? 
-                messages[messages.length - 1].messageId : null;
-
             if (messages.length === 0) {
-                if (oldHtml.indexOf('no-messages') === -1) {
-                    container.innerHTML = `
-                        <div class="no-messages">
-                            <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; color: #cbd5e0;"></i>
-                            <h3>No messages yet</h3>
-                            <p>Be the first to start the conversation!</p>
-                        </div>
-                    `;
-                }
+                container.innerHTML = `
+                    <div class="no-messages">
+                        <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; color: #cbd5e0;"></i>
+                        <h3>No messages yet</h3>
+                        <p>Be the first to start the conversation!</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -497,22 +524,21 @@
                 `;
             }).join('');
 
-            if (container.innerHTML !== html) {
-                container.innerHTML = html;
-            }
-
-            // Scroll to bottom only if new messages arrived or we're already at bottom
-            if (lastLoadedId !== lastMessageId || isAtBottom()) {
-                scrollToBottom();
-            }
+            container.innerHTML = html;
+            scrollToBottom();
         }
 
         function appendMessage(message) {
             const container = document.getElementById('messagesContainer');
+            
+            const noMessages = container.querySelector('.no-messages');
+            if (noMessages) noMessages.remove();
+            
             const isOwnMessage = message.userId === currentUser.id;
             const initials = message.userName ? 
                 message.userName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
             const userPhoto = message.userPhoto || '';
+            const atBottom = isAtBottom();
 
             const messageHtml = `
                 <div class="message ${isOwnMessage ? 'own-message' : ''}" data-id="${message.messageId}">
@@ -533,13 +559,16 @@
             `;
 
             container.insertAdjacentHTML('beforeend', messageHtml);
-            scrollToBottom();
+            
+            if (atBottom) {
+                 scrollToBottom();
+            }
         }
 
-        function updateParticipantsCount(messages) {
-            const uniqueUsers = new Set(messages.map(m => m.userId));
+        function updateParticipantsCount(participants) {
+            const count = Array.isArray(participants) ? participants.length : 0;
             document.getElementById('participantsCount').textContent = 
-                `${uniqueUsers.size} participant${uniqueUsers.size !== 1 ? 's' : ''}`;
+                `${count} participant${count !== 1 ? 's' : ''}`;
         }
 
         async function sendMessage() {
@@ -553,10 +582,9 @@
             sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
             try {
-                // Send via Socket.IO first (real-time)
                 if (socket && socket.connected) {
                     const messageData = {
-                        roomId: currentDiscussion.groupId,
+                        roomId: currentDiscussion.groupId, // This now works
                         discussionId: currentDiscussion.discussionId,
                         userId: currentUser.id,
                         userName: currentUser.fullName,
@@ -565,13 +593,17 @@
                         timestamp: new Date().toISOString()
                     };
 
+                    // Send to server via socket
                     socket.emit('sendMessage', messageData);
-                    input.value = '';
                     
-                    // Also save to database via HTTP as backup
-                    await saveMessageToDatabase(messageData);
+                    // Manually append our own message for instant UI update
+                    // The server will broadcast it to everyone else
+                    appendMessage(messageData);
+                    
+                    input.value = ''; // Clear input immediately
+                    handleTypingIndicator(true); // Force stop typing
                 } else {
-                    // Fallback to HTTP if socket not available
+                    // Fallback to HTTP if socket is dead
                     await saveMessageToDatabase({
                         discussionId: currentDiscussion.discussionId,
                         userId: currentUser.id,
@@ -579,6 +611,8 @@
                         userPhoto: currentUser.profilePhotoUrl,
                         content: content
                     });
+                    input.value = ''; // Clear input on success
+                    await loadMessages(); // Refresh manually if no socket
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -590,6 +624,7 @@
             }
         }
 
+        // This function is for the HTTP fallback
         async function saveMessageToDatabase(messageData) {
             try {
                 const response = await fetch(`${API_URL}/sendmessage`, {
@@ -604,10 +639,7 @@
                 }
             } catch (error) {
                 console.error('HTTP save error:', error);
-                // Don't show error to user if socket already sent the message
-                if (!socket || !socket.connected) {
-                    throw error;
-                }
+                throw error;
             }
         }
 
@@ -616,15 +648,27 @@
                 event.preventDefault();
                 sendMessage();
             }
-
-            // Typing indicator
             handleTypingIndicator();
         }
 
-        function handleTypingIndicator() {
+        function handleTypingIndicator(forceStop = false) {
             const input = document.getElementById('messageInput');
             
-            if (input.value.trim().length > 0 && !isTyping) {
+            if (forceStop || (input.value.trim().length === 0 && isTyping)) {
+                // Stop typing
+                isTyping = false;
+                clearTimeout(typingTimer);
+                if (socket && socket.connected) {
+                    socket.emit('typing', { 
+                        roomId: currentDiscussion.groupId,
+                        user: currentUser.fullName, 
+                        typing: false 
+                    });
+                }
+                hideTypingIndicator();
+                
+            } else if (input.value.trim().length > 0 && !isTyping) {
+                // Start typing
                 isTyping = true;
                 if (socket && socket.connected) {
                     socket.emit('typing', { 
@@ -635,20 +679,12 @@
                 }
             }
 
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(() => {
-                if (isTyping) {
-                    isTyping = false;
-                    if (socket && socket.connected) {
-                        socket.emit('typing', { 
-                            roomId: currentDiscussion.groupId,
-                            user: currentUser.fullName, 
-                            typing: false 
-                        });
-                    }
-                    hideTypingIndicator();
-                }
-            }, 1000);
+            if (isTyping && !forceStop) {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    handleTypingIndicator(true);
+                }, 1000);
+            }
         }
 
         function showTypingIndicator(userName) {
@@ -683,7 +719,6 @@
 
         function formatTime(timestamp) {
             if (!timestamp) return '';
-            
             const date = new Date(timestamp);
             const now = new Date();
             const diffMs = now - date;
@@ -719,24 +754,17 @@
 
         function isAtBottom() {
             const container = document.getElementById('messagesContainer');
-            return container.scrollHeight - container.scrollTop <= container.clientHeight + 1;
+            return container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
         }
 
         function goBack() {
-            if (messageRefreshInterval) {
-                clearInterval(messageRefreshInterval);
-            }
             if (socket) {
                 socket.disconnect();
             }
             window.location.href = 'discuss-room.html';
         }
 
-        // Clean up on page unload
         window.addEventListener('beforeunload', () => {
-            if (messageRefreshInterval) {
-                clearInterval(messageRefreshInterval);
-            }
             if (socket) {
                 socket.emit('typing', { 
                     roomId: currentDiscussion?.groupId, 
@@ -745,49 +773,6 @@
                 });
                 socket.disconnect();
             }
-        });
-
-        // Universal navigation fixes
-        document.addEventListener('DOMContentLoaded', function() {
-            const pageRoutes = {
-                'mainpage': 'mainpage.html',
-                'profile': 'profile.html',
-                'qa': 'qa.html',
-                'discuss': 'discuss-room.html',
-                'groups': 'group-creationpage.html',
-                'notifications': 'notifications.html',
-                'chat': 'chatpage.html'
-            };
-            
-            // Fix data-page navigation
-            document.querySelectorAll('[data-page]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    if (pageRoutes[page]) {
-                        window.location.href = pageRoutes[page];
-                    }
-                });
-            });
-            
-            // Fix logout
-            document.querySelectorAll('onclick="logout()", .logout-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.clear();
-                    window.location.href = 'login.html';
-                });
-            });
-            
-            // Fix home/logo link
-            document.querySelectorAll('a[href], .logo, .brand').forEach(link => {
-                if (link.textContent.toLowerCase().includes('huddle')) {
-                    if (!link.classList.contains('logo')) {
-                        link.style.cursor = 'pointer';
-                        link.addEventListener('click', () => window.location.href = 'mainpage.html');
-                    }
-                }
-            });
         });
     </script>
 </body>
