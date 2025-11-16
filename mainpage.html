@@ -1055,16 +1055,13 @@
     /* Mobile devices (Landscape) - 640px and below */
     @media (max-width: 640px) {
       .nav-sidebar {
-        position: fixed;
-        left: -250px;
-        width: 250px;
-        transition: left 0.3s ease;
-        z-index: 1000;
+        width: 100%;
+        position: relative;
+        left: 0;
+        height: auto;
+        overflow-x: auto;
       }
       
-      .nav-sidebar.active {
-        left: 0;
-      }
       
       .main-content {
         margin-left: 0;
@@ -2287,3 +2284,4 @@
 </body>
 
 </html>
+
