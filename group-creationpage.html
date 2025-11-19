@@ -188,7 +188,7 @@
     </div>
 
     <script>
-        window.location.origin;;
+        const API_URL = 'https://huddle-backend-wfpv.onrender.com';
         const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
 
         if (!currentUser.id) {
@@ -281,3 +281,4 @@
 </script>
 </body>
 </html>
+
