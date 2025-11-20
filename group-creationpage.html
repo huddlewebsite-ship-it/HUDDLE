@@ -1,157 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Create Project Group - The Huddle</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .back-btn {
-            background: white;
-            color: #667eea;
-            border: 2px solid white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .form-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .form-header h1 {
-            font-size: 2rem;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .form-header p {
-            color: #718096;
-            font-size: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 0.95rem;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: #718096;
-            font-size: 0.85rem;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .submit-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        /* (your styles kept same for familiarity) */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height:100vh; padding:20px;}
+        .container { max-width:800px; margin:0 auto; }
+        .back-btn { background: white; color: #667eea; border:2px solid white; padding:12px 24px; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; transition:all .3s; margin-bottom:20px;}
+        .back-btn:hover { background: rgba(255,255,255,.9); }
+        .form-card { background:white; border-radius:20px; padding:40px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+        .form-header { text-align:center; margin-bottom:30px; }
+        .form-header h1 { font-size:2rem; color:#2d3748; margin-bottom:10px; }
+        .form-header p { color:#718096; font-size:1rem; }
+        .form-group { margin-bottom:25px; }
+        .form-group label { display:block; margin-bottom:8px; font-weight:600; color:#2d3748; font-size:.95rem; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:14px; border:2px solid #e2e8f0; border-radius:10px; font-size:1rem; font-family:'Inter', sans-serif; transition:all .3s; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline:none; border-color:#667eea; }
+        .form-group textarea { resize:vertical; min-height:120px; }
+        .form-group small { display:block; margin-top:5px; color:#718096; font-size:.85rem; }
+        .submit-btn { background: linear-gradient(135deg,#667eea 0%, #764ba2 100%); color:white; border:none; padding:15px 40px; border-radius:10px; font-size:1.1rem; font-weight:600; cursor:pointer; width:100%; transition:all .3s; margin-top:10px; }
+        .submit-btn:hover { opacity:.9; transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,.4); }
+        .submit-btn:disabled { opacity:.5; cursor:not-allowed; }
+        .error { color:#b81d1d; margin-top:6px; font-size:.9rem; }
     </style>
 </head>
 <body>
     <div class="container">
         <button class="back-btn" onclick="window.location.href='mainpage.html'">← Back to Home</button>
-        
+
         <div class="form-card">
             <div class="form-header">
                 <h1>🚀 Create Project Group</h1>
                 <p>Find teammates for your next amazing project</p>
             </div>
 
-            <form id="createGroupForm">
+            <form id="createGroupForm" novalidate>
                 <div class="form-group">
                     <label for="projectName">Project Name *</label>
                     <input type="text" id="projectName" required placeholder="Enter your project name">
+                    <div id="errProjectName" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="description">Description & Objective *</label>
                     <textarea id="description" required placeholder="Describe your project goals and what you want to achieve"></textarea>
+                    <div id="errDescription" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
@@ -164,21 +61,24 @@
                         <option value="5">5 members</option>
                         <option value="6+">6+ members</option>
                     </select>
+                    <div id="errTeamSize" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="skills">Required Skills *</label>
                     <input type="text" id="skills" required placeholder="e.g., JavaScript, Python, React, Node.js">
                     <small>Separate skills with commas</small>
+                    <div id="errSkills" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="timeline">Project Timeline *</label>
                     <input type="text" id="timeline" required placeholder="e.g., 3 months, 1 semester">
+                    <div id="errTimeline" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="contact">Contact Information</label>
+                    <label for="contact">Contact Information (optional)</label>
                     <input type="text" id="contact" placeholder="Your email or preferred contact method">
                 </div>
 
@@ -187,98 +87,236 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = 'https://huddle-backend-wfpv.onrender.com';
-        const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
+<script>
+/*
+  Key improvements:
+  - API_URL defaults to window.location.origin (works when both frontend + backend are on same domain).
+  - Build payload with only required keys backend expects.
+  - Trim + validate inputs. Normalize timeline (adds plural 'months' when appropriate).
+  - Parse skills robustly; removes typos from empty tokens by filtering.
+  - Better response / error handling and UI feedback.
+*/
 
-        if (!currentUser.id) {
-            alert('Please login first!');
-            window.location.href = 'login.html';
-        }
+(function() {
+    // Use the same origin by default. If you want to force a remote backend, replace below with the absolute URL.
+    const API_URL = window.location.origin;
 
-        document.getElementById('createGroupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    function $(id){ return document.getElementById(id); }
 
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating Group...';
+    // currentUser fetch from localStorage
+    const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
 
-            const formData = {
+    // If user not logged in, redirect to login.
+    if (!currentUser || !currentUser.id) {
+        alert('Please login first!');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Utilities
+    function normalizeTimeline(timeline) {
+        if (!timeline) return '';
+        timeline = timeline.trim();
+        // if just a number like "3", assume months
+        if (/^\d+$/.test(timeline)) return timeline + ' months';
+        // if "3 month" -> "3 months"
+        let m = timeline.match(/^(\d+)\s*month(s)?$/i);
+        if (m) return m[1] + ' months';
+        // if "1 month" keep singular
+        m = timeline.match(/^1\s*months$/i);
+        if (m) return '1 month';
+        // default: return input trimmed
+        return timeline;
+    }
+
+    function parseSkills(skillsRaw) {
+        if (!skillsRaw) return [];
+        return skillsRaw
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+            // unify common typos: quick small mapping, you can expand later
+            .map(s => s.replace(/\bpytjon\b/i, 'Python'))
+            // remove duplicate case-insensitive
+            .reduce((acc, skill) => {
+                const existing = acc.find(x => x.toLowerCase() === skill.toLowerCase());
+                if (!existing) acc.push(skill);
+                return acc;
+            }, []);
+    }
+
+    function showError(id, message) {
+        const el = $(id);
+        if (!el) return;
+        el.textContent = message;
+        el.style.display = 'block';
+    }
+    function hideError(id) {
+        const el = $(id);
+        if (!el) return;
+        el.textContent = '';
+        el.style.display = 'none';
+    }
+
+    function validateForm({project_name, description, team_size, skills, timeline}) {
+        let ok = true;
+        if (!project_name || project_name.trim().length < 3) {
+            showError('errProjectName', 'Project name must be at least 3 characters.');
+            ok = false;
+        } else hideError('errProjectName');
+
+        if (!description || description.trim().length < 10) {
+            showError('errDescription', 'Describe your project (at least 10 characters).');
+            ok = false;
+        } else hideError('errDescription');
+
+        if (!team_size || team_size === '') {
+            showError('errTeamSize', 'Select a preferred team size.');
+            ok = false;
+        } else hideError('errTeamSize');
+
+        if (!skills || !skills.length) {
+            showError('errSkills', 'Add at least one skill.');
+            ok = false;
+        } else hideError('errSkills');
+
+        if (!timeline || timeline.trim().length < 2) {
+            showError('errTimeline', 'Provide an estimated timeline (e.g., "3 months").');
+            ok = false;
+        } else hideError('errTimeline');
+
+        return ok;
+    }
+
+    document.getElementById('createGroupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = $('submitBtn');
+        submitBtn.disabled = true;
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating Group...';
+
+        try {
+            // read and normalize inputs
+            const project_name = $('projectName').value.trim();
+            const description_objective = $('description').value.trim();
+            const preferred_team_size = $('teamSize').value;
+            const required_skills = parseSkills($('skills').value);
+            const project_timeline = normalizeTimeline($('timeline').value.trim());
+            // contact left out from payload (backend create_group doesn't use it). If you want to store, update backend.
+            const contact_info_raw = $('contact').value.trim();
+
+            // validate
+            const isValid = validateForm({
+                project_name, description: description_objective,
+                team_size: preferred_team_size, skills: required_skills, timeline: project_timeline
+            });
+
+            if (!isValid) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+                return;
+            }
+
+            // Build payload with only the backend-expected fields
+            const payload = {
                 creatoruserid: currentUser.id,
-                creatorname: currentUser.fullName,
-                project_name: document.getElementById('projectName').value,
-                description_objective: document.getElementById('description').value,
-                preferred_team_size: document.getElementById('teamSize').value,
-                required_skills: document.getElementById('skills').value.split(',').map(s => s.trim()).filter(s => s),
-                project_timeline: document.getElementById('timeline').value,
-                contact_info: document.getElementById('contact').value || currentUser.email
+                project_name,
+                description_objective,
+                preferred_team_size,
+                required_skills,
+                project_timeline
             };
 
-            try {
-                const response = await fetch(`${API_URL}/creategroup`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
+            // Optional: if you have backend support for contact_info, send it. For now we log it.
+            if (contact_info_raw) {
+                console.debug('Contact info provided (not sent):', contact_info_raw);
+            }
 
-                const data = await response.json();
+            console.debug('Sending creategroup payload:', payload);
 
-                if (data.success) {
+            const res = await fetch(`${API_URL}/creategroup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            // handle non-json responses gracefully
+            let data;
+            const text = await res.text();
+            try { data = JSON.parse(text); } catch (err) { data = { raw: text }; }
+
+            if (res.ok) {
+                // success expected to be {"success":true, "groupId": "..."}
+                if (data && data.success) {
                     alert('🎉 Group created successfully! Redirecting to groups page...');
                     window.location.href = 'mainpage.html#groups';
+                    return;
                 } else {
-                    alert('Error: ' + (data.error || 'Failed to create group'));
+                    // backend returned 200 but data.success is falsey
+                    console.warn('Create group returned success=false', data);
+                    alert('Error creating group: ' + (data.error || JSON.stringify(data)));
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Group';
+                    submitBtn.textContent = originalBtnText;
+                    return;
                 }
-            } catch (error) {
-                console.error('Error creating group:', error);
-                alert('Failed to create group. Please try again.');
+            } else {
+                // HTTP error like 400/404/500
+                console.error('Create group HTTP error', res.status, data);
+                const serverMsg = (data && (data.error || data.message)) ? (data.error || data.message) : `HTTP ${res.status}`;
+                alert(`Failed to create group: ${serverMsg}`);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Group';
+                submitBtn.textContent = originalBtnText;
+                return;
+            }
+        } catch (err) {
+            console.error('Error creating group:', err);
+            alert('Failed to create group. Check console / network tab for details.');
+            const submitBtn = $('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Group';
+        }
+    });
+
+    // =========== BUG FIX: NAVIGATION (UNIVERSAL) ===========
+    document.addEventListener('DOMContentLoaded', function() {
+        const pageRoutes = {
+            'mainpage': '/mainpage.html',
+            'profile': '/profile.html',
+            'qa': '/qa.html',
+            'discuss': '/discuss-room.html',
+            'groups': '/group-creationpage.html',
+            'notifications': '/notifications.html',
+            'chat': '/chatpage.html'
+        };
+
+        // Fix data-page navigation
+        document.querySelectorAll('[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                if (pageRoutes[page]) window.location.href = pageRoutes[page];
+            });
+        });
+
+        // Fix logout
+        document.querySelectorAll('[onclick*="logout"], #logoutBtn, .logout-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.href = '/login.html';
+            });
+        });
+
+        // Fix home/logo link
+        document.querySelectorAll('a[href="#"], a[href=""], .logo, .brand').forEach(link => {
+            if (link.textContent.toLowerCase().includes('huddle') || link.classList.contains('logo')) {
+                link.style.cursor = 'pointer';
+                link.addEventListener('click', () => window.location.href = '/mainpage.html');
             }
         });
-    
-        // =========== BUG FIX: NAVIGATION (UNIVERSAL) ===========
-        document.addEventListener('DOMContentLoaded', function() {
-            const pageRoutes = {
-                'mainpage': '/mainpage.html',
-                'profile': '/profile.html',
-                'qa': '/qa.html',
-                'discuss': '/discuss-room.html',
-                'groups': '/group-creationpage.html',
-                'notifications': '/notifications.html',
-                'chat': '/chatpage.html'
-            };
-
-            // Fix data-page navigation
-            document.querySelectorAll('[data-page]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    if (pageRoutes[page]) window.location.href = pageRoutes[page];
-                });
-            });
-
-            // Fix logout
-            document.querySelectorAll('[onclick*="logout"], #logoutBtn, .logout-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.clear();
-                    window.location.href = '/login.html';
-                });
-            });
-
-            // Fix home/logo link
-            document.querySelectorAll('a[href="#"], a[href=""], .logo, .brand').forEach(link => {
-                if (link.textContent.toLowerCase().includes('huddle') || link.classList.contains('logo')) {
-                    link.style.cursor = 'pointer';
-                    link.addEventListener('click', () => window.location.href = '/mainpage.html');
-                }
-            });
-        });
-
+    });
+})();
 </script>
 </body>
 </html>
-
