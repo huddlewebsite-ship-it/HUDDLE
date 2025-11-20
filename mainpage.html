@@ -849,48 +849,136 @@
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .main-container {
-                margin-left: 0;
-                padding: 10px;
-            }
+/* 🔥 IMPROVED RESPONSIVE DESIGN - SAME LAYOUT ALL DEVICES */
 
-            .nav-sidebar {
-                width: 60px;
-            }
+/* Mobile and Tablet - Stack layout */
+@media (max-width: 1024px) {
+    .main-container {
+        margin-left: 0;
+        padding: 10px;
+    }
 
-            .nav-sidebar:hover {
-                width: 200px;
-            }
+    .nav-sidebar {
+        width: 60px;
+        bottom: 0;
+        top: auto;
+        flex-direction: row;
+        height: 60px;
+        padding: 0;
+        border-top: 1px solid var(--border-color);
+        border-right: none;
+    }
 
-            .content-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
+    .nav-sidebar:hover {
+        width: 60px;
+        height: 60px;
+    }
 
-            .left-sidebar, .right-sidebar {
-                display: none;
-            }
+    .nav-avatar {
+        width: 40px;
+        height: 40px;
+        margin: 0;
+    }
 
-            .tabs-container {
-                flex-direction: column;
-            }
+    .nav-items {
+        display: flex;
+        flex-direction: row;
+        width: auto;
+    }
 
-            .tab-btn {
-                justify-content: space-between;
-            }
+    .nav-item {
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        justify-content: center;
+    }
 
-            .group-card {
-                margin-bottom: 16px;
-                padding: 16px;
-            }
+    .nav-label, .nav-divider {
+        display: none !important;
+    }
 
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-                margin: 10px;
-            }
-        }
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .left-sidebar, .right-sidebar {
+        display: none;
+    }
+
+    /* Keep same card layout */
+    .group-card {
+        margin-bottom: 15px;
+        padding: 18px;
+    }
+
+    .tabs-container {
+        flex-direction: row; /* Keep horizontal tabs */
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        min-width: 120px;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .group-card-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .join-group-btn, .leave-group-btn {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+        max-height: 90vh;
+    }
+}
+
+/* Large screens - keep original layout */
+@media (min-width: 1025px) {
+    .main-container {
+        margin-left: 72px;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr 320px;
+        gap: 20px;
+    }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+    .group-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .group-status-badge {
+        margin-top: 10px;
+    }
+
+    .search-container input {
+        padding: 12px 16px 12px 40px;
+        font-size: 14px;
+    }
+
+    .tab-btn {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+
+    .skill-tag {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+}
 
         /* Loading animation */
         .loading-groups {
@@ -1947,8 +2035,13 @@
                     
                     const result = await response.json();
                     if (result.success) {
-                        showNotification('Successfully joined group!');
+                        showNotification(result.message || 'Join request sent!');
                         await loadGroups(); // Refresh groups
+
+                                        // Switch to "My Groups" tab if joined successfully
+                if (!result.message.includes('request')) {
+                    setTimeout(() => switchTab('myGroups'), 500);
+                }
                         
                         // Scroll to the group and highlight
                         setTimeout(() => {
@@ -1990,6 +2083,9 @@
                 if (result.success) {
                     showNotification('Left group successfully');
                     await loadGroups(); // Refresh groups
+
+                                    // Switch to "Available Groups" tab after leaving
+                setTimeout(() => switchTab('available'), 500);
                 } else {
                     showNotification(result.error || 'Failed to leave group');
                 }
