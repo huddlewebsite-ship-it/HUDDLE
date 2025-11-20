@@ -498,94 +498,94 @@ def leave_group_api():
         return jsonify({"error": f"Failed to leave group: {str(e)}"}), 500
         @app.route("/acceptjoinrequest", methods=["POST"])
 def accept_join_request():
-    try:
-        groups_collection = get_collection_safe(student_db, "groups")
-        notifications_collection = get_collection_safe(student_db, "notifications")
-        users_collection = get_collection_safe(student_db, "users")
+            try:
+                groups_collection = get_collection_safe(student_db, "groups")
+                notifications_collection = get_collection_safe(student_db, "notifications")
+                users_collection = get_collection_safe(student_db, "users")
+        
+                data = request.get_json()
+                group_id = data.get("groupId")
+                user_id_to_accept = str(data.get("userId"))
+                leader_id = str(data.get("leaderId"))
+        
+                if not all([group_id, user_id_to_accept, leader_id]):
+                        return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+        
+                group = groups_collection.find_one({"_id": ObjectId(group_id)})
+                if not group:
+                        return jsonify({"error": "Group not found"}), 404
+        
+                # Only leader can accept
+                    if str(group.get("creatoruserid")) != leader_id:
+                    return jsonify({"error": "Unauthorized"}), 403
+        
+                # Move user from pending → members
+                groups_collection.update_one(
+                        {"_id": ObjectId(group_id)},
+                        {
+                                "$pull": {"pendingMembers": user_id_to_accept},
+                                "$addToSet": {"members": user_id_to_accept}
+                        }
+                )
+        
+                # Notify accepted user
+                create_notification(
+                        user_id_to_accept,
+                        "join_accepted",
+                        leader_id,
+                        group_id,
+                    f"You have been accepted into '{group.get('project_name', 'the group')}'!"
+                )
+        
+                # Mark join_request notifications as read
+                notifications_collection.update_many(
+                        {"groupId": str(group_id), "fromUserId": user_id_to_accept, "type": "join_request"},
+                        {"$set": {"isRead": True}}
+                )
+        
+            return jsonify({"success": True, "message": "User accepted!"}), 200
 
-        data = request.get_json()
-        group_id = data.get("groupId")
-        user_id_to_accept = str(data.get("userId"))
-        leader_id = str(data.get("leaderId"))
-
-        if not all([group_id, user_id_to_accept, leader_id]):
-            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
-
-        group = groups_collection.find_one({"_id": ObjectId(group_id)})
-        if not group:
-            return jsonify({"error": "Group not found"}), 404
-
-        # Only leader can accept
-        if str(group.get("creatoruserid")) != leader_id:
-            return jsonify({"error": "Unauthorized"}), 403
-
-        # Move user from pending → members
-        groups_collection.update_one(
-            {"_id": ObjectId(group_id)},
-            {
-                "$pull": {"pendingMembers": user_id_to_accept},
-                "$addToSet": {"members": user_id_to_accept}
-            }
-        )
-
-        # Notify accepted user
-        create_notification(
-            user_id_to_accept,
-            "join_accepted",
-            leader_id,
-            group_id,
-            f"You have been accepted into '{group.get('project_name', 'the group')}'!"
-        )
-
-        # Mark join_request notifications as read
-        notifications_collection.update_many(
-            {"groupId": str(group_id), "fromUserId": user_id_to_accept, "type": "join_request"},
-            {"$set": {"isRead": True}}
-        )
-
-        return jsonify({"success": True, "message": "User accepted!"}), 200
-
-    except Exception as e:
-        print(f"❌ Accept join request error: {e}")
-        return jsonify({"error": str(e)}), 500
+        except Exception as e:
+                print(f"❌ Accept join request error: {e}")
+                return jsonify({"error": str(e)}), 500
 
 
 @app.route("/rejectjoinrequest", methods=["POST"])
 def reject_join_request():
-    try:
-        groups_collection = get_collection_safe(student_db, "groups")
-        notifications_collection = get_collection_safe(student_db, "notifications")
+    try:    
+                groups_collection = get_collection_safe(student_db, "groups")
+                notifications_collection = get_collection_safe(student_db, "notifications")
+        
+                data = request.get_json()
+                group_id = data.get("groupId")
+                user_id_to_reject = str(data.get("userId"))
+                leader_id = str(data.get("leaderId"))
+        
+                if not all([group_id, user_id_to_reject, leader_id]):
+                        return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+        
+                group = groups_collection.find_one({"_id": ObjectId(group_id)})
+                if not group:
+                        return jsonify({"error": "Group not found"}), 404
+        
+                            if str(group.get("creatoruserid")) != leader_id:
+                            return jsonify({"error": "Unauthorized"}), 403
+                
+                                groups_collection.update_one(
+                                {"_id": ObjectId(group_id)},
+                            {"$pull": {"pendingMembers": user_id_to_reject}}
+                )
+            
+                    notifications_collection.update_many(
+                        {"groupId": str(group_id), "fromUserId": user_id_to_reject, "type": "join_request"},
+                        {"$set": {"isRead": True}}
+                )
+        
+            return jsonify({"success": True, "message": "Request rejected"}), 200
 
-        data = request.get_json()
-        group_id = data.get("groupId")
-        user_id_to_reject = str(data.get("userId"))
-        leader_id = str(data.get("leaderId"))
-
-        if not all([group_id, user_id_to_reject, leader_id]):
-            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
-
-        group = groups_collection.find_one({"_id": ObjectId(group_id)})
-        if not group:
-            return jsonify({"error": "Group not found"}), 404
-
-        if str(group.get("creatoruserid")) != leader_id:
-            return jsonify({"error": "Unauthorized"}), 403
-
-        groups_collection.update_one(
-            {"_id": ObjectId(group_id)},
-            {"$pull": {"pendingMembers": user_id_to_reject}}
-        )
-
-        notifications_collection.update_many(
-            {"groupId": str(group_id), "fromUserId": user_id_to_reject, "type": "join_request"},
-            {"$set": {"isRead": True}}
-        )
-
-        return jsonify({"success": True, "message": "Request rejected"}), 200
-
-    except Exception as e:
-        print(f"❌ Reject join request error: {e}")
-        return jsonify({"error": str(e)}), 500
+        except Exception as e:
+                print(f"❌ Reject join request error: {e}")
+                return jsonify({"error": str(e)}), 500
 
 
 @app.route("/getmygroups", methods=["GET"])
