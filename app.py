@@ -33,6 +33,7 @@ def add_no_cache_headers(response):
 
 MONGO_URI = os.environ.get("MONGO_URI")
 
+
 def connect_mongo(uri, retries=2, timeout_ms=5000):
     if not uri:
         print("⚠️  MONGO_URI not set. Set the MONGO_URI environment variable or use a .env file.")
@@ -55,6 +56,7 @@ def connect_mongo(uri, retries=2, timeout_ms=5000):
                 import time
                 time.sleep(2)
     return None
+
 
 mongo_client = connect_mongo(MONGO_URI)
 
@@ -85,6 +87,7 @@ if mongo_client:
 else:
     print("❌ Could not create Mongo client. DB handles are None.")
 
+
 def get_collection_safe(db, name):
     if db is None:
         raise RuntimeError(f"DB handle is not available for collection {name}")
@@ -110,9 +113,12 @@ def create_notification(user_id, notification_type, from_user_id, group_id, mess
     except Exception as e:
         print(f"❌ Failed to create notification: {e}")
         return None
+
+
 # ==================== UTILITIES ====================
 def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
 
 def check_password(password: str, pw_hash: bytes) -> bool:
     try:
@@ -120,17 +126,19 @@ def check_password(password: str, pw_hash: bytes) -> bool:
     except Exception:
         return False
 
+
 # ==================== HTML ROUTES ====================
 @app.route('/')
 def index():
     return send_from_directory('.', 'frontpage.html')
 
+
 @app.route('/<path:filename>')
 def serve_file(filename):
     return send_from_directory('.', filename)
 
-# ==================== AUTH ROUTES ====================
 
+# ==================== AUTH ROUTES ====================
 @app.route('/signup', methods=['POST'])
 def signup():
     try:
@@ -193,6 +201,7 @@ def signup():
         traceback.print_exc(limit=1)
         return jsonify({'error': 'Failed to create account'}), 500
 
+
 @app.route("/login", methods=["POST"])
 def login_api():
     try:
@@ -235,8 +244,8 @@ def login_api():
         traceback.print_exc(limit=1)
         return jsonify({'error': 'Login failed'}), 500
 
-# ==================== PROFILE ROUTES ====================
 
+# ==================== PROFILE ROUTES ====================
 @app.route("/updateprofile", methods=["POST"])
 def update_profile():
     try:
@@ -261,6 +270,7 @@ def update_profile():
         print(f"❌ Update profile error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to update"}), 500
+
 
 @app.route("/getuser/<user_id>", methods=["GET"])
 def get_user(user_id):
@@ -316,8 +326,8 @@ def get_user(user_id):
         traceback.print_exc(limit=1)
         return jsonify({"success": False, "error": f"Failed to get user: {str(e)}"}), 500
 
-# ==================== GROUP ROUTES ====================
 
+# ==================== GROUP ROUTES ====================
 @app.route('/getavailablegroups', methods=['GET', 'POST'])
 def get_groups():
     try:
@@ -376,14 +386,15 @@ def get_groups():
         traceback.print_exc(limit=1)
         return jsonify(error="Could not load groups", details=str(e)), 500
 
+
 @app.route("/creategroup", methods=["POST"])
 def create_group():
     try:
         groups_collection = get_collection_safe(student_db, "groups")
         data = request.get_json()
-        
+
         print(f"📝 Received group creation request: {data}")
-        
+
         if not data.get("project_name"):
             return jsonify({"error": "Project name required"}), 400
 
@@ -409,6 +420,7 @@ def create_group():
         print(f"❌ Create group error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to create group: {str(e)}"}), 500
+
 
 @app.route("/joingroup", methods=["POST"])
 def join_group_api():
@@ -466,6 +478,7 @@ def join_group_api():
         print(f"❌ Join group error: {e}")
         return jsonify({"error": f"Failed to join group: {str(e)}"}), 500
 
+
 @app.route("/leavegroup", methods=["POST"])
 def leave_group_api():
     try:
@@ -496,96 +509,102 @@ def leave_group_api():
         print(f"❌ Leave group error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to leave group: {str(e)}"}), 500
-        @app.route("/acceptjoinrequest", methods=["POST"])
-def accept_join_request():
-            try:
-                groups_collection = get_collection_safe(student_db, "groups")
-                notifications_collection = get_collection_safe(student_db, "notifications")
-                users_collection = get_collection_safe(student_db, "users")
-        
-                data = request.get_json()
-                group_id = data.get("groupId")
-                user_id_to_accept = str(data.get("userId"))
-                leader_id = str(data.get("leaderId"))
-        
-                if not all([group_id, user_id_to_accept, leader_id]):
-                        return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
-        
-                group = groups_collection.find_one({"_id": ObjectId(group_id)})
-                if not group:
-                        return jsonify({"error": "Group not found"}), 404
-        
-                # Only leader can accept
-                    if str(group.get("creatoruserid")) != leader_id:
-                    return jsonify({"error": "Unauthorized"}), 403
-        
-                # Move user from pending → members
-                groups_collection.update_one(
-                        {"_id": ObjectId(group_id)},
-                        {
-                                "$pull": {"pendingMembers": user_id_to_accept},
-                                "$addToSet": {"members": user_id_to_accept}
-                        }
-                )
-        
-                # Notify accepted user
-                create_notification(
-                        user_id_to_accept,
-                        "join_accepted",
-                        leader_id,
-                        group_id,
-                    f"You have been accepted into '{group.get('project_name', 'the group')}'!"
-                )
-        
-                # Mark join_request notifications as read
-                notifications_collection.update_many(
-                        {"groupId": str(group_id), "fromUserId": user_id_to_accept, "type": "join_request"},
-                        {"$set": {"isRead": True}}
-                )
-        
-            return jsonify({"success": True, "message": "User accepted!"}), 200
 
-        except Exception as e:
-                print(f"❌ Accept join request error: {e}")
-                return jsonify({"error": str(e)}), 500
+
+@app.route("/acceptjoinrequest", methods=["POST"])
+def accept_join_request():
+    try:
+        groups_collection = get_collection_safe(student_db, "groups")
+        notifications_collection = get_collection_safe(student_db, "notifications")
+        users_collection = get_collection_safe(student_db, "users")
+
+        data = request.get_json()
+        group_id = data.get("groupId")
+        user_id_to_accept = str(data.get("userId"))
+        leader_id = str(data.get("leaderId"))
+
+        if not all([group_id, user_id_to_accept, leader_id]):
+            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+
+        group = groups_collection.find_one({"_id": ObjectId(group_id)})
+        if not group:
+            return jsonify({"error": "Group not found"}), 404
+
+        # Only leader can accept
+        if str(group.get("creatoruserid")) != leader_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        # Move user from pending → members
+        groups_collection.update_one(
+            {"_id": ObjectId(group_id)},
+            {
+                "$pull": {"pendingMembers": user_id_to_accept},
+                "$addToSet": {"members": user_id_to_accept}
+            }
+        )
+
+        # Notify accepted user
+        create_notification(
+            user_id_to_accept,
+            "join_accepted",
+            leader_id,
+            group_id,
+            f"You have been accepted into '{group.get('project_name', 'the group')}'!"
+        )
+
+        # Mark join_request notifications as read
+        notifications_collection.update_many(
+            {"groupId": str(group_id), "fromUserId": user_id_to_accept, "type": "join_request"},
+            {"$set": {"isRead": True}}
+        )
+
+        print(f"✅ User {user_id_to_accept} accepted into group {group_id}")
+        return jsonify({"success": True, "message": "User accepted!"}), 200
+
+    except Exception as e:
+        print(f"❌ Accept join request error: {e}")
+        traceback.print_exc(limit=1)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/rejectjoinrequest", methods=["POST"])
 def reject_join_request():
-    try:    
-                groups_collection = get_collection_safe(student_db, "groups")
-                notifications_collection = get_collection_safe(student_db, "notifications")
-        
-                data = request.get_json()
-                group_id = data.get("groupId")
-                user_id_to_reject = str(data.get("userId"))
-                leader_id = str(data.get("leaderId"))
-        
-                if not all([group_id, user_id_to_reject, leader_id]):
-                        return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
-        
-                group = groups_collection.find_one({"_id": ObjectId(group_id)})
-                if not group:
-                        return jsonify({"error": "Group not found"}), 404
-        
-                            if str(group.get("creatoruserid")) != leader_id:
-                            return jsonify({"error": "Unauthorized"}), 403
-                
-                                groups_collection.update_one(
-                                {"_id": ObjectId(group_id)},
-                            {"$pull": {"pendingMembers": user_id_to_reject}}
-                )
-            
-                    notifications_collection.update_many(
-                        {"groupId": str(group_id), "fromUserId": user_id_to_reject, "type": "join_request"},
-                        {"$set": {"isRead": True}}
-                )
-        
-            return jsonify({"success": True, "message": "Request rejected"}), 200
+    try:
+        groups_collection = get_collection_safe(student_db, "groups")
+        notifications_collection = get_collection_safe(student_db, "notifications")
 
-        except Exception as e:
-                print(f"❌ Reject join request error: {e}")
-                return jsonify({"error": str(e)}), 500
+        data = request.get_json()
+        group_id = data.get("groupId")
+        user_id_to_reject = str(data.get("userId"))
+        leader_id = str(data.get("leaderId"))
+
+        if not all([group_id, user_id_to_reject, leader_id]):
+            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+
+        group = groups_collection.find_one({"_id": ObjectId(group_id)})
+        if not group:
+            return jsonify({"error": "Group not found"}), 404
+
+        if str(group.get("creatoruserid")) != leader_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        groups_collection.update_one(
+            {"_id": ObjectId(group_id)},
+            {"$pull": {"pendingMembers": user_id_to_reject}}
+        )
+
+        notifications_collection.update_many(
+            {"groupId": str(group_id), "fromUserId": user_id_to_reject, "type": "join_request"},
+            {"$set": {"isRead": True}}
+        )
+
+        print(f"✅ Join request from {user_id_to_reject} rejected for group {group_id}")
+        return jsonify({"success": True, "message": "Request rejected"}), 200
+
+    except Exception as e:
+        print(f"❌ Reject join request error: {e}")
+        traceback.print_exc(limit=1)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/getmygroups", methods=["GET"])
@@ -608,8 +627,8 @@ def get_my_groups():
         traceback.print_exc(limit=1)
         return jsonify({"error": "Could not load user's groups"}), 500
 
-# ==================== POSTS ROUTES ====================
 
+# ==================== POSTS ROUTES ====================
 @app.route("/createpost", methods=["POST"])
 def create_post():
     try:
@@ -635,6 +654,7 @@ def create_post():
         print(f"❌ Create post error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to create post"}), 500
+
 
 @app.route("/getposts", methods=["GET"])
 def get_posts():
@@ -662,8 +682,8 @@ def get_posts():
         traceback.print_exc(limit=1)
         return jsonify({"error": "Could not load posts"}), 500
 
-# ==================== Q&A ROUTES ====================
 
+# ==================== Q&A ROUTES ====================
 @app.route("/createquestion", methods=["POST"])
 def create_question():
     try:
@@ -694,6 +714,7 @@ def create_question():
         print(f"❌ Create question error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to create question: {str(e)}"}), 500
+
 
 @app.route("/getquestions", methods=["GET"])
 def get_questions():
@@ -778,6 +799,7 @@ def get_questions():
         traceback.print_exc(limit=1)
         return jsonify({"success": False, "error": f"Could not load questions: {str(e)}"}), 500
 
+
 @app.route("/addanswer", methods=["POST"])
 def add_answer():
     try:
@@ -816,6 +838,7 @@ def add_answer():
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to add answer: {str(e)}"}), 500
 
+
 @app.route("/votequestion", methods=["POST"])
 def vote_question():
     try:
@@ -841,6 +864,7 @@ def vote_question():
         print(f"❌ Vote question error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to vote"}), 500
+
 
 @app.route("/acceptanswer", methods=["POST"])
 def accept_answer():
@@ -877,6 +901,7 @@ def accept_answer():
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to accept answer: {str(e)}"}), 500
 
+
 @app.route("/voteanswer", methods=["POST"])
 def vote_answer():
     try:
@@ -907,8 +932,8 @@ def vote_answer():
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to vote on answer: {str(e)}"}), 500
 
-# ==================== NOTIFICATIONS ====================
 
+# ==================== NOTIFICATIONS ====================
 @app.route('/getnotifications', methods=['GET'])
 def get_notifications():
     try:
@@ -926,8 +951,18 @@ def get_notifications():
 
         data = []
         for notif in notifications:
-            from_user = users_collection.find_one({"_id": ObjectId(notif.get('fromUserId'))})
-            group = groups_collection.find_one({"_id": ObjectId(notif.get('groupId'))})
+            from_user = None
+            group = None
+            try:
+                if notif.get('fromUserId'):
+                    from_user = users_collection.find_one({"_id": ObjectId(notif.get('fromUserId'))})
+            except Exception:
+                from_user = None
+            try:
+                if notif.get('groupId'):
+                    group = groups_collection.find_one({"_id": ObjectId(notif.get('groupId'))})
+            except Exception:
+                group = None
 
             data.append({
                 "id": str(notif["_id"]),
@@ -946,11 +981,11 @@ def get_notifications():
 
     except Exception as e:
         print(f"❌ Notification error: {e}")
+        traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
 
 
 # ==================== DISCUSSIONS ====================
-
 @app.route("/getdiscussions", methods=["GET"])
 def get_discussions():
     try:
@@ -988,6 +1023,7 @@ def get_discussions():
         print(f"❌ Get discussions error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/creatediscussion", methods=["POST"])
 def create_discussion():
@@ -1033,6 +1069,7 @@ def create_discussion():
         traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/getmessages/<discussion_id>", methods=["GET"])
 def get_messages(discussion_id):
     try:
@@ -1069,6 +1106,7 @@ def get_messages(discussion_id):
         print(f"❌ Get messages error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/sendmessage", methods=["POST"])
 def send_message():
@@ -1124,8 +1162,8 @@ def send_message():
         traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
 
-# ==================== CHAT ROUTES ====================
 
+# ==================== CHAT ROUTES ====================
 @app.route('/chat', methods=['POST'])
 def save_chat():
     try:
@@ -1149,6 +1187,7 @@ def save_chat():
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to save chat"}), 500
 
+
 @app.route('/chats', methods=['GET'])
 def get_chats():
     try:
@@ -1169,8 +1208,8 @@ def get_chats():
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to get chats"}), 500
 
-# ==================== HEALTH & TEST ====================
 
+# ==================== HEALTH & TEST ====================
 @app.route('/health', methods=['GET'])
 def health():
     try:
@@ -1182,6 +1221,7 @@ def health():
     except Exception:
         db_status = "disconnected"
     return jsonify({"status": "healthy", "database": db_status, "timestamp": datetime.utcnow().isoformat()}), 200
+
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -1204,17 +1244,18 @@ def test():
         }
     }), 200
 
+
 # ==================== START SERVER ====================
 if __name__ == "__main__":
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("🚀 THE HUDDLE - STUDENT NETWORKING PLATFORM")
-    print("="*70)
+    print("=" * 70)
     print(f"🌐 Server URL:    http://127.0.0.1:5000")
     print(f"🗄️  Database 1:    student_network_db")
     print(f"🗄️  Database 2:    chat_db")
     print(f"✅ Status:        Ready")
     print(f"🆕 Q&A Features:  Enhanced with better error handling")
-    print("="*70)
+    print("=" * 70)
     print("\n📄 Available Pages:")
     print("   • http://127.0.0.1:5000/login.html")
     print("   • http://127.0.0.1:5000/qa.html")
@@ -1222,6 +1263,6 @@ if __name__ == "__main__":
     print("   • http://127.0.0.1:5000/test")
     print("   • http://127.0.0.1:5000/health")
     print("   • http://127.0.0.1:5000/getquestions")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     app.run(host="127.0.0.1", port=5000, debug=True)
