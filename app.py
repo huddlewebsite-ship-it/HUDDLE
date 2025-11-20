@@ -90,6 +90,26 @@ def get_collection_safe(db, name):
         raise RuntimeError(f"DB handle is not available for collection {name}")
     return db[name]
 
+
+def create_notification(user_id, notification_type, from_user_id, group_id, message):
+    """Helper to create notifications"""
+    try:
+        notifications_collection = get_collection_safe(student_db, "notifications")
+        notification = {
+            "userId": str(user_id),
+            "fromUserId": str(from_user_id),
+            "groupId": str(group_id),
+            "type": notification_type,
+            "message": message,
+            "isRead": False,
+            "createdAt": datetime.utcnow()
+        }
+        result = notifications_collection.insert_one(notification)
+        print(f"✅ Notification created for user {user_id}")
+        return str(result.inserted_id)
+    except Exception as e:
+        print(f"❌ Failed to create notification: {e}")
+        return None
 # ==================== UTILITIES ====================
 def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -376,6 +396,7 @@ def create_group():
             "required_skills": data.get("required_skills", []),
             "project_timeline": data.get("project_timeline", ""),
             "members": [creator_id],
+            "pendingMembers": [],
             "createdAt": datetime.utcnow()
         }
         result = groups_collection.insert_one(group)
