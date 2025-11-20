@@ -383,6 +383,14 @@
                             <button class="btn btn-primary" onclick="viewNotification('${notif.id}', '${notif.actionUrl || ''}')">
                                 ${notif.actionUrl ? 'View' : 'Dismiss'}
                             </button>
+                    ${notif.type === 'join_request' ? `
+                        <button class="btn btn-success" onclick="acceptJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
+                            Accept
+                        </button>
+                        <button class="btn btn-danger" onclick="rejectJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
+                            Reject
+                        </button>
+                    ` : ''}
                             ${isUnread ? `
                                 <button class="btn btn-secondary mark-read" data-id="${notif.id}">
                                     Mark Read
@@ -571,6 +579,57 @@
                 }
             });
         }
+
+    // Accept join request
+    async function acceptJoinRequest(groupId, userId, notificationId) {
+        try {
+            const response = await fetch(`${API_URL}/acceptjoinrequest`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    groupId: groupId,
+                    userId: userId,
+                    leaderId: currentUser.id
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert("User accepted!");
+                loadNotifications();
+            } else {
+                alert(data.error || "Error");
+            }
+        } catch (err) {
+            alert("Network error");
+        }
+    }
+
+    // Reject join request
+    async function rejectJoinRequest(groupId, userId, notificationId) {
+        try {
+            const response = await fetch(`${API_URL}/rejectjoinrequest`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    groupId: groupId,
+                    userId: userId,
+                    leaderId: currentUser.id
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert("Request rejected");
+                loadNotifications();
+            } else {
+                alert(data.error || "Error");
+            }
+        } catch (err) {
+            alert("Network error");
+        }
+    }
     </script>
 </body>
+
 </html>
