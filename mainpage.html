@@ -1435,17 +1435,14 @@
             }
             
             // Separate into Available/My Groups for tab logic
-            let availableGroups = filteredGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull);
-            let myGroups = filteredGroups.filter(g => g.members?.includes(currentUser.id));
+        let availableGroups = filteredGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull);            let myGroups = filteredGroups.filter(g => g.members?.includes(String(currentUser.id)));
             
             // Render tab based on which is active
             if (currentTab === "available") {
               displayGroupsBatch(availableGroups, 'available');
-              showResultsCount(availableGroups.length, allGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull).length);
-            } else {
+            showResultsCount(availableGroups.length, allGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull).length);            } else {
               displayGroupsBatch(myGroups, 'myGroups');
-              showResultsCount(myGroups.length, allGroups.filter(g => g.members?.includes(currentUser.id)).length);
-            }
+            showResultsCount(myGroups.length, allGroups.filter(g => g.members?.includes(String(currentUser.id))).length);            }
         }
         
         function showResultsCount(filtered, total) {
@@ -1510,7 +1507,7 @@
                         </div>
                     `;
                 } else {
-                    const myGroupsCount = allGroups.filter(g => g.members?.includes(currentUser.id)).length;
+                    const myGroupsCount = allGroups.filter(g => g.members?.includes(String(currentUser.id))).length;
                     
                     let message, heading;
                     if (myGroupsCount > 0) {
@@ -1731,9 +1728,9 @@
         function loadMoreGroups() {
             let groupsToDisplay = [];
             if (currentTab === 'available') {
-                groupsToDisplay = allGroups.filter(g => !g.members?.includes(currentUser.id) && !g.isFull);
+                groupsToDisplay = allGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull);
             } else {
-                groupsToDisplay = allGroups.filter(g => g.members?.includes(currentUser.id));
+                groupsToDisplay = allGroups.filter(g => g.members?.includes(String(currentUser.id)));
             }
             
             if (searchQuery) {
@@ -2120,5 +2117,6 @@
 </body>
 
 </html>
+
 
 
