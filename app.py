@@ -414,32 +414,56 @@ def create_group():
 def join_group_api():
     try:
         groups_collection = get_collection_safe(student_db, "groups")
+        users_collection = get_collection_safe(student_db, "users")
         data = request.get_json()
+
         user_id = str(data.get("user_id"))
         group_id = data.get("group_id")
 
         if not user_id or not group_id:
             return jsonify({"error": "User ID and Group ID required"}), 400
 
-        print(f"🔍 Join group - User: {user_id}, Group: {group_id}")
+        print(f"🔍 Join group request - User: {user_id}, Group: {group_id}")
 
         group = groups_collection.find_one({"_id": ObjectId(group_id)})
         if not group:
-            print(f"❌ Group not found: {group_id}")
             return jsonify({"error": "Group not found"}), 404
 
-        result = groups_collection.update_one({"_id": ObjectId(group_id)}, {"$addToSet": {"members": str(user_id)}})
-        if result.matched_count > 0:
-            print(f"✅ User {user_id} joined group {group_id}")
-            return jsonify({"success": True, "message": "Joined successfully!"}), 200
-        else:
-            return jsonify({"error": "Group not found"}), 404
-    except RuntimeError as runtime_err:
-        print(f"❌ Join group runtime error (DB unavailable): {runtime_err}")
-        return jsonify({"error": "Database unavailable"}), 503
+        # Already in group?
+        members = [str(m) for m in group.get("members", [])]
+        if user_id in members:
+            return jsonify({"error": "Already a member"}), 400
+
+        # Already pending?
+        pending = [str(p) for p in group.get("pendingMembers", [])]
+        if user_id in pending:
+            return jsonify({"error": "Request already sent"}), 400
+
+        # Add to pending list
+        groups_collection.update_one(
+            {"_id": ObjectId(group_id)},
+            {"$addToSet": {"pendingMembers": user_id}}
+        )
+
+        # Get user name
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        user_name = user.get("fullName", "Someone") if user else "Someone"
+
+        # Send notification to group leader
+        leader_id = str(group.get("creatoruserid"))
+        create_notification(
+            leader_id,
+            "join_request",
+            user_id,
+            group_id,
+            f"{user_name} wants to join your group '{group.get('project_name', 'your group')}'"
+        )
+
+        print(f"✅ User {user_id} sent join request to group {group_id}")
+        return jsonify({"success": True, "message": "Join request sent! Waiting for approval."}), 200
+
     except Exception as e:
         print(f"❌ Join group error: {e}")
-        traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to join group: {str(e)}"}), 500
 
 @app.route("/leavegroup", methods=["POST"])
@@ -472,6 +496,97 @@ def leave_group_api():
         print(f"❌ Leave group error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to leave group: {str(e)}"}), 500
+        @app.route("/acceptjoinrequest", methods=["POST"])
+def accept_join_request():
+    try:
+        groups_collection = get_collection_safe(student_db, "groups")
+        notifications_collection = get_collection_safe(student_db, "notifications")
+        users_collection = get_collection_safe(student_db, "users")
+
+        data = request.get_json()
+        group_id = data.get("groupId")
+        user_id_to_accept = str(data.get("userId"))
+        leader_id = str(data.get("leaderId"))
+
+        if not all([group_id, user_id_to_accept, leader_id]):
+            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+
+        group = groups_collection.find_one({"_id": ObjectId(group_id)})
+        if not group:
+            return jsonify({"error": "Group not found"}), 404
+
+        # Only leader can accept
+        if str(group.get("creatoruserid")) != leader_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        # Move user from pending → members
+        groups_collection.update_one(
+            {"_id": ObjectId(group_id)},
+            {
+                "$pull": {"pendingMembers": user_id_to_accept},
+                "$addToSet": {"members": user_id_to_accept}
+            }
+        )
+
+        # Notify accepted user
+        create_notification(
+            user_id_to_accept,
+            "join_accepted",
+            leader_id,
+            group_id,
+            f"You have been accepted into '{group.get('project_name', 'the group')}'!"
+        )
+
+        # Mark join_request notifications as read
+        notifications_collection.update_many(
+            {"groupId": str(group_id), "fromUserId": user_id_to_accept, "type": "join_request"},
+            {"$set": {"isRead": True}}
+        )
+
+        return jsonify({"success": True, "message": "User accepted!"}), 200
+
+    except Exception as e:
+        print(f"❌ Accept join request error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/rejectjoinrequest", methods=["POST"])
+def reject_join_request():
+    try:
+        groups_collection = get_collection_safe(student_db, "groups")
+        notifications_collection = get_collection_safe(student_db, "notifications")
+
+        data = request.get_json()
+        group_id = data.get("groupId")
+        user_id_to_reject = str(data.get("userId"))
+        leader_id = str(data.get("leaderId"))
+
+        if not all([group_id, user_id_to_reject, leader_id]):
+            return jsonify({"error": "Group ID, User ID, Leader ID required"}), 400
+
+        group = groups_collection.find_one({"_id": ObjectId(group_id)})
+        if not group:
+            return jsonify({"error": "Group not found"}), 404
+
+        if str(group.get("creatoruserid")) != leader_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        groups_collection.update_one(
+            {"_id": ObjectId(group_id)},
+            {"$pull": {"pendingMembers": user_id_to_reject}}
+        )
+
+        notifications_collection.update_many(
+            {"groupId": str(group_id), "fromUserId": user_id_to_reject, "type": "join_request"},
+            {"$set": {"isRead": True}}
+        )
+
+        return jsonify({"success": True, "message": "Request rejected"}), 200
+
+    except Exception as e:
+        print(f"❌ Reject join request error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/getmygroups", methods=["GET"])
 def get_my_groups():
@@ -797,64 +912,42 @@ def vote_answer():
 @app.route('/getnotifications', methods=['GET'])
 def get_notifications():
     try:
+        notifications_collection = get_collection_safe(student_db, "notifications")
+        users_collection = get_collection_safe(student_db, "users")
         groups_collection = get_collection_safe(student_db, "groups")
+
         user_id = str(request.args.get('userId'))
         if not user_id:
-            return jsonify({'success': False, 'error': 'User ID required'}), 400
+            return jsonify({"error": "User ID required"}), 400
 
-        notifications_data = []
-        user_groups = list(groups_collection.find({'members': user_id}))
+        notifications = list(notifications_collection.find(
+            {"userId": user_id}
+        ).sort("createdAt", -1).limit(50))
 
-        for group in user_groups:
-            group_id = str(group["_id"])
-            project_name = group.get('project_name', 'Unnamed Group')
-            created_at = group.get('createdAt', datetime.utcnow()).isoformat()
-            notifications_data.append({
-                'id': f'group-{group_id}',
-                'type': 'group',
-                'name': project_name,
-                'avatar': project_name[0:2].upper() if project_name else 'UG',
-                'time': created_at,
-                'content': f"You joined the group '{project_name}'. Start collaborating!",
-                'unread': True,
-                'actionUrl': f"mainpage.html#group-{group_id}",
-                'createdAt': created_at,
+        data = []
+        for notif in notifications:
+            from_user = users_collection.find_one({"_id": ObjectId(notif.get('fromUserId'))})
+            group = groups_collection.find_one({"_id": ObjectId(notif.get('groupId'))})
+
+            data.append({
+                "id": str(notif["_id"]),
+                "type": notif.get("type"),
+                "name": from_user.get("fullName", "Someone") if from_user else "Someone",
+                "avatar": (from_user.get("fullName", "??")[0:2].upper()) if from_user else "??",
+                "content": notif.get("message"),
+                "unread": not notif.get("isRead", False),
+                "createdAt": notif.get("createdAt", datetime.utcnow()).isoformat(),
+                "groupId": notif.get("groupId"),
+                "fromUserId": notif.get("fromUserId"),
             })
-            if str(group.get('creatoruserid')) == user_id and len(group.get('members', [])) > 1:
-                member_count = len(group.get('members', []))
-                notifications_data.append({
-                    'id': f'member-{group_id}',
-                    'type': 'activity',
-                    'name': 'New Member Alert',
-                    'avatar': '👥',
-                    'time': created_at,
-                    'content': f"Your group '{project_name}' now has {member_count} member{'s' if member_count > 1 else ''}!",
-                    'unread': True,
-                    'actionUrl': f"mainpage.html#group-{group_id}",
-                    'createdAt': created_at,
-                })
 
-        notifications_data.append({
-            'id': 'system-qa-update',
-            'type': 'activity',
-            'name': 'Platform Update',
-            'avatar': '🎉',
-            'time': datetime.utcnow().isoformat(),
-            'content': 'New Q&A features are now live! Try asking your first question.',
-            'unread': True,
-            'actionUrl': 'qa.html',
-            'createdAt': datetime.utcnow().isoformat(),
-        })
+        print(f"✅ Retrieved {len(data)} notifications for {user_id}")
+        return jsonify({"success": True, "notifications": data}), 200
 
-        print(f"✅ Generated {len(notifications_data)} notifications for user {user_id}")
-        return jsonify({'success': True, 'notifications': notifications_data}), 200
-    except RuntimeError as runtime_err:
-        print(f"❌ Get notifications runtime error (DB unavailable): {runtime_err}")
-        return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
-        print(f"❌ Get notifications error: {e}")
-        traceback.print_exc(limit=1)
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"❌ Notification error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # ==================== DISCUSSIONS ====================
 
