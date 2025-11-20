@@ -30,12 +30,8 @@ def add_no_cache_headers(response):
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
     return response
-# Recommended: set MONGO_URI in environment or Codespaces secrets
-MONGO_URI = os.environ.get("MONGO_URI")
 
-# If you absolutely need a local fallback for quick testing, uncomment and edit below.
-# WARNING: do NOT commit credentials in source code. Use a .env file or repo secrets instead.
-# MONGO_URI = MONGO_URI or "mongodb+srv://<user>:<pass>@cluster0.example.mongodb.net/?retryWrites=true&w=majority"
+MONGO_URI = os.environ.get("MONGO_URI")
 
 def connect_mongo(uri, retries=2, timeout_ms=5000):
     if not uri:
@@ -50,7 +46,6 @@ def connect_mongo(uri, retries=2, timeout_ms=5000):
                 dbs = client.list_database_names()
                 print("Databases visible to client:", dbs)
             except Exception:
-                # non-fatal: listing DBs may be restricted
                 pass
             return client
         except Exception as e:
@@ -63,7 +58,6 @@ def connect_mongo(uri, retries=2, timeout_ms=5000):
 
 mongo_client = connect_mongo(MONGO_URI)
 
-# DB handles (may be None if connection failed)
 student_db = None
 chat_db = None
 
@@ -72,7 +66,6 @@ if mongo_client:
         student_db = mongo_client["student_network_db"]
         chat_db = mongo_client["chat_db"]
 
-        # Print collections (best-effort)
         try:
             print("\n   Database: student_network_db")
             print("   Collections:", student_db.list_collection_names())
@@ -85,14 +78,13 @@ if mongo_client:
         except Exception as e:
             print("   Could not list chat_db collections:", e)
 
-        print("")  # spacer
+        print("")
     except Exception as e:
         print("❌ Error while creating DB handles:", e)
         traceback.print_exc(limit=1)
 else:
-    print("❌ Could not create Mongo client. DB handles are None. Routes using DB will return errors accordingly.")
+    print("❌ Could not create Mongo client. DB handles are None.")
 
-# Helper collections (safe accessors)
 def get_collection_safe(db, name):
     if db is None:
         raise RuntimeError(f"DB handle is not available for collection {name}")
@@ -100,7 +92,6 @@ def get_collection_safe(db, name):
 
 # ==================== UTILITIES ====================
 def hash_password(password: str) -> bytes:
-    """Hash password using bcrypt (returns bytes)."""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
 
 def check_password(password: str, pw_hash: bytes) -> bool:
@@ -118,7 +109,7 @@ def index():
 def serve_file(filename):
     return send_from_directory('.', filename)
 
-# ==================== DB-DEPENDENT ROUTES (use safe access) ====================
+# ==================== AUTH ROUTES ====================
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -143,7 +134,7 @@ def signup():
 
         user = {
             'email': email,
-            'password': pw_hash,           # stored as bytes
+            'password': pw_hash,
             'fullName': fullName,
             'university': university,
             'branch': branch,
@@ -175,7 +166,7 @@ def signup():
             }
         }), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Signup runtime error (DB unavailable): {re}")
+        print(f"❌ Signup runtime error (DB unavailable): {runtime_err}")
         return jsonify({'error': 'Database is unavailable'}), 503
     except Exception as e:
         print(f"❌ Signup error: {e}")
@@ -217,14 +208,15 @@ def login_api():
         print(f"✅ User logged in: {email}")
         return jsonify({'success': True, 'user': user_data}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Login runtime error (DB unavailable): {re}")
+        print(f"❌ Login runtime error (DB unavailable): {runtime_err}")
         return jsonify({'error': 'Database is unavailable'}), 503
     except Exception as e:
         print(f"❌ Login error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({'error': 'Login failed'}), 500
 
-# --- Profile & utility routes (using safe collections) ---
+# ==================== PROFILE ROUTES ====================
+
 @app.route("/updateprofile", methods=["POST"])
 def update_profile():
     try:
@@ -243,7 +235,7 @@ def update_profile():
         else:
             return jsonify({"error": "User not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Update profile runtime error (DB unavailable): {re}")
+        print(f"❌ Update profile runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database is unavailable"}), 503
     except Exception as e:
         print(f"❌ Update profile error: {e}")
@@ -297,18 +289,15 @@ def get_user(user_id):
         print(f"✅ Retrieved user: {user_data['fullName']} (ID: {user_data['id']})")
         return jsonify({"success": True, "user": user_data}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get user runtime error (DB unavailable): {re}")
+        print(f"❌ Get user runtime error (DB unavailable): {runtime_err}")
         return jsonify({"success": False, "error": "Database is unavailable"}), 503
     except Exception as e:
         print(f"❌ Get user error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"success": False, "error": f"Failed to get user: {str(e)}"}), 500
 
-# ==================== GROUPS, POSTS, Q&A, DISCUSSIONS, CHAT ====================
-# For brevity these handlers reuse the same pattern: obtain collections via get_collection_safe(...)
-# and wrap actions with try/except. The logic is kept identical to your original functions.
+# ==================== GROUP ROUTES ====================
 
-# GROUP ROUTES
 @app.route('/getavailablegroups', methods=['GET', 'POST'])
 def get_groups():
     try:
@@ -324,7 +313,7 @@ def get_groups():
         for group in groups:
             members = group.get('members', [])
             members = [str(m) for m in members]
-            preferredteamsize = group.get('preferred_team_size') or group.get('preferredteamsize') or group.get('preferred_team_size') or group.get('preferred_team_size') or group.get('preferred_team_size')
+            preferredteamsize = group.get('preferred_team_size')
             maxsize = None
             if preferredteamsize:
                 match = re.search(r'(\d+)', str(preferredteamsize))
@@ -361,7 +350,7 @@ def get_groups():
             })
         return jsonify(success=True, groups=groupslist), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get groups runtime error (DB unavailable): {re}")
+        print(f"❌ Get groups runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         traceback.print_exc(limit=1)
@@ -372,6 +361,9 @@ def create_group():
     try:
         groups_collection = get_collection_safe(student_db, "groups")
         data = request.get_json()
+        
+        print(f"📝 Received group creation request: {data}")
+        
         if not data.get("project_name"):
             return jsonify({"error": "Project name required"}), 400
 
@@ -390,12 +382,12 @@ def create_group():
         print(f"✅ Group created: {group['project_name']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Group created successfully!", "groupId": str(result.inserted_id)}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Create group runtime error (DB unavailable): {re}")
+        print(f"❌ Create group runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Create group error: {e}")
         traceback.print_exc(limit=1)
-        return jsonify({"error": "Failed to create group"}), 500
+        return jsonify({"error": f"Failed to create group: {str(e)}"}), 500
 
 @app.route("/joingroup", methods=["POST"])
 def join_group_api():
@@ -422,7 +414,7 @@ def join_group_api():
         else:
             return jsonify({"error": "Group not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Join group runtime error (DB unavailable): {re}")
+        print(f"❌ Join group runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Join group error: {e}")
@@ -453,7 +445,7 @@ def leave_group_api():
         else:
             return jsonify({"error": "Group not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Leave group runtime error (DB unavailable): {re}")
+        print(f"❌ Leave group runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Leave group error: {e}")
@@ -473,14 +465,15 @@ def get_my_groups():
         print(f"✅ Retrieved {len(groups_list)} groups for user {user_id}")
         return jsonify({"success": True, "groups": groups_list}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get my groups runtime error (DB unavailable): {re}")
+        print(f"❌ Get my groups runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get my groups error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Could not load user's groups"}), 500
 
-# POSTS
+# ==================== POSTS ROUTES ====================
+
 @app.route("/createpost", methods=["POST"])
 def create_post():
     try:
@@ -500,7 +493,7 @@ def create_post():
         print(f"✅ Post created by: {post['userName']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Post created successfully!", "postId": str(result.inserted_id)}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Create post runtime error (DB unavailable): {re}")
+        print(f"❌ Create post runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Create post error: {e}")
@@ -526,14 +519,15 @@ def get_posts():
         print(f"✅ Retrieved {len(posts_list)} posts")
         return jsonify({"success": True, "posts": posts_list}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get posts runtime error (DB unavailable): {re}")
+        print(f"❌ Get posts runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get posts error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Could not load posts"}), 500
 
-# Q&A ROUTES (kept similar to your original logic)
+# ==================== Q&A ROUTES ====================
+
 @app.route("/createquestion", methods=["POST"])
 def create_question():
     try:
@@ -558,7 +552,7 @@ def create_question():
         print(f"✅ Question created: {question['title'][:50]}... | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Question posted successfully!", "questionId": str(result.inserted_id)}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Create question runtime error (DB unavailable): {re}")
+        print(f"❌ Create question runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Create question error: {e}")
@@ -641,7 +635,7 @@ def get_questions():
             }
         }), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get questions runtime error (DB unavailable): {re}")
+        print(f"❌ Get questions runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get questions error: {e}")
@@ -679,7 +673,7 @@ def add_answer():
         else:
             return jsonify({"error": "Question not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Add answer runtime error (DB unavailable): {re}")
+        print(f"❌ Add answer runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Add answer error: {e}")
@@ -705,7 +699,7 @@ def vote_question():
         else:
             return jsonify({"error": "Question not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Vote question runtime error (DB unavailable): {re}")
+        print(f"❌ Vote question runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Vote question error: {e}")
@@ -740,7 +734,7 @@ def accept_answer():
         else:
             return jsonify({"error": "Answer not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Accept answer runtime error (DB unavailable): {re}")
+        print(f"❌ Accept answer runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Accept answer error: {e}")
@@ -770,14 +764,15 @@ def vote_answer():
         else:
             return jsonify({"error": "Answer not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Vote answer runtime error (DB unavailable): {re}")
+        print(f"❌ Vote answer runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Vote answer error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": f"Failed to vote on answer: {str(e)}"}), 500
 
-# NOTIFICATIONS
+# ==================== NOTIFICATIONS ====================
+
 @app.route('/getnotifications', methods=['GET'])
 def get_notifications():
     try:
@@ -833,14 +828,15 @@ def get_notifications():
         print(f"✅ Generated {len(notifications_data)} notifications for user {user_id}")
         return jsonify({'success': True, 'notifications': notifications_data}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get notifications runtime error (DB unavailable): {re}")
+        print(f"❌ Get notifications runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get notifications error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# DISCUSSIONS (kept same logic)
+# ==================== DISCUSSIONS ====================
+
 @app.route("/getdiscussions", methods=["GET"])
 def get_discussions():
     try:
@@ -872,7 +868,7 @@ def get_discussions():
         print(f"✅ Retrieved {len(discussions_list)} discussions for user {user_id}")
         return jsonify({"success": True, "discussions": discussions_list}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get discussions runtime error (DB unavailable): {re}")
+        print(f"❌ Get discussions runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get discussions error: {e}")
@@ -916,7 +912,7 @@ def create_discussion():
         print(f"✅ Discussion created: {discussion['roomName']} | ID: {result.inserted_id}")
         return jsonify({"success": True, "message": "Discussion created!", "discussionId": str(result.inserted_id)}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Create discussion runtime error (DB unavailable): {re}")
+        print(f"❌ Create discussion runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Create discussion error: {e}")
@@ -953,7 +949,7 @@ def get_messages(discussion_id):
             "groupName": discussion.get("groupName", "")
         }), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get messages runtime error (DB unavailable): {re}")
+        print(f"❌ Get messages runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get messages error: {e}")
@@ -1007,14 +1003,15 @@ def send_message():
         else:
             return jsonify({"error": "Discussion not found"}), 404
     except RuntimeError as runtime_err:
-        print(f"❌ Send message runtime error (DB unavailable): {re}")
+        print(f"❌ Send message runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Send message error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": str(e)}), 500
 
-# CHAT ROUTES (use chat_db handle)
+# ==================== CHAT ROUTES ====================
+
 @app.route('/chat', methods=['POST'])
 def save_chat():
     try:
@@ -1031,7 +1028,7 @@ def save_chat():
         print(f"✅ Chat saved: {username} in {room}")
         return jsonify({"success": True, "chatId": str(result.inserted_id)}), 201
     except RuntimeError as runtime_err:
-        print(f"❌ Save chat runtime error (DB unavailable): {re}")
+        print(f"❌ Save chat runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Save chat error: {e}")
@@ -1051,14 +1048,15 @@ def get_chats():
         print(f"✅ Retrieved {len(chats)} chats")
         return jsonify({"success": True, "chats": chats}), 200
     except RuntimeError as runtime_err:
-        print(f"❌ Get chats runtime error (DB unavailable): {re}")
+        print(f"❌ Get chats runtime error (DB unavailable): {runtime_err}")
         return jsonify({"error": "Database unavailable"}), 503
     except Exception as e:
         print(f"❌ Get chats error: {e}")
         traceback.print_exc(limit=1)
         return jsonify({"error": "Failed to get chats"}), 500
 
-# HEALTH & TEST
+# ==================== HEALTH & TEST ====================
+
 @app.route('/health', methods=['GET'])
 def health():
     try:
@@ -1092,9 +1090,9 @@ def test():
         }
     }), 200
 
-# ==================== START SERVER (dev only) ====================
+# ==================== START SERVER ====================
 if __name__ == "__main__":
-    print("\    import re\nn" + "="*70)
+    print("\n" + "="*70)
     print("🚀 THE HUDDLE - STUDENT NETWORKING PLATFORM")
     print("="*70)
     print(f"🌐 Server URL:    http://127.0.0.1:5000")
@@ -1112,5 +1110,4 @@ if __name__ == "__main__":
     print("   • http://127.0.0.1:5000/getquestions")
     print("="*70 + "\n")
 
-    # For local development we keep debug on. In production (gunicorn) this block is skipped.
     app.run(host="127.0.0.1", port=5000, debug=True)
