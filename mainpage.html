@@ -5,1265 +5,456 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - The Huddle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
         :root {
-            --light-bg: #f0f2f5;
-            --dark-text: #2c3e50;
-            --dark-bg: #222f3e;
-            --card-bg: #ffffff;
-            --accent1: #005c97;
-            --accent2: #00c9a7;
-            --shadow-color: rgba(0, 92, 151, 0.1);
-            --border-color: #e5e7eb;
-            --muted: #8899a6;
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      /* Deep Warm Charcoal */
+            --paper-card: #242321;    /* Lighter Charcoal Cardstock */
+            --paper-inset: #151413;   /* Deep inset for inputs */
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   /* Cream / Off-White */
+            --ink-secondary: #a8a49e; /* Warm Grey */
+            --ink-tertiary: #6b6863;  /* Deep Grey */
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Dimensionality (Tactile Feel) --- */
+            --shadow-card: 
+                1px 1px 0px rgba(255, 255, 255, 0.05) inset, 
+                0 4px 20px rgba(0,0,0,0.4);
+            --shadow-floating: 
+                0 20px 40px -10px rgba(0,0,0,0.6);
+                
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
+            
+            /* --- Status Colors --- */
+            --status-green-bg: rgba(129, 178, 154, 0.15);
+            --status-green-text: #81b29a;
+            --status-red-bg: rgba(224, 122, 95, 0.15);
+            --status-red-text: #e07a5f;
+            --status-yellow-bg: rgba(242, 204, 143, 0.15);
+            --status-yellow-text: #f2cc8f;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: Inter, sans-serif;
-            background: var(--light-bg);
-            color: var(--dark-text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
-        /* Navigation Sidebar */
-        .nav-sidebar {
-            width: 72px;
-            background: var(--card-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 28px 0;
-            z-index: 100;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            box-shadow: 5px 0 20px var(--shadow-color);
-            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.01em;
+            font-weight: 700;
         }
 
-        .nav-sidebar:hover {
-            width: 240px;
-            background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-text) 100%);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.2);
-        }
-
-        .nav-avatar {
-            position: relative;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent1), var(--accent2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            box-shadow: 0 6px 20px rgba(0, 92, 151, 0.4);
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.3s;
-            overflow: hidden;
-        }
-
-        .nav-avatar:hover {
-            transform: scale(1.08);
-        }
-
-        .nav-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .nav-initials {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: white;
-            text-align: center;
-            line-height: 1;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.14);
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .nav-items {
-            width: 100%;
-            flex: 1;
-        }
-
-        .nav-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            height: 50px;
-            cursor: pointer;
-            margin: 6px 0;
-            padding: 0 24px;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-item.active {
-            background: rgba(0, 201, 167, 0.15);
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--accent2);
-        }
-
-        .nav-item i {
-            font-size: 20px;
-            color: var(--accent1);
-            min-width: 24px;
-            transition: all 0.3s;
-        }
-
-        .nav-sidebar:hover .nav-item i {
-            color: white;
-        }
-
-        .nav-item:hover i {
-            color: var(--accent2);
-            transform: scale(1.1);
-        }
-
-        .nav-label {
-            margin-left: 18px;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--dark-text);
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .nav-sidebar:hover .nav-label {
-            opacity: 1;
-            color: white;
-        }
-
-        .nav-divider {
-            width: 40px;
-            height: 1px;
-            background: rgba(0, 0, 0, 0.1);
-            margin: 12px auto;
-            transition: all 0.3s;
-        }
-
-        .nav-sidebar:hover .nav-divider {
-            width: 80%;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Main Container */
-        .main-container {
-            margin-left: 72px;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 300px 1fr 320px;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Left Sidebar */
-        .left-sidebar {
+        /* --- Top Navigation --- */
+        .navbar {
             position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-
-        .profile-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            margin-bottom: 20px;
-        }
-
-        .profile-header {
+            top: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
             display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .profile-pic {
-            width: 56px;
-            height: 56px;
-            min-width: 56px;
-            min-height: 56px;
-            background: linear-gradient(135deg, var(--accent1), var(--accent2));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 2rem;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 10px rgba(0,92,151,0.15);
-            user-select: none;
-            overflow: hidden;
-            position: relative;
+            pointer-events: none; /* Clicks pass through padding areas */
         }
 
-        .profile-pic img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-pic-initials {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .profile-info h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .profile-info p {
-            font-size: 13px;
-            color: var(--muted);
-        }
-
-        .quick-links {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-        }
-
-        .quick-links h4 {
-            font-size: 14px;
-            margin-bottom: 15px;
-            color: var(--dark-text);
-        }
-
-        .quick-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .quick-link:hover {
-            background: var(--light-bg);
-        }
-
-        .quick-link i {
-            width: 20px;
-            color: var(--accent1);
-        }
-
-        .quick-link span {
-            font-size: 14px;
-        }
-
-        /* Feed */
-        .feed {
-            background: transparent;
-        }
-
-        /* Search Section */
-        .search-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-        }
-
-        .search-container {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .search-container input {
-            width: 100%;
-            padding: 14px 20px 14px 45px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--light-bg);
-            font-size: 15px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .search-container input:focus {
-            border-color: var(--accent1);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 92, 151, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--muted);
-            font-size: 16px;
-        }
-
-        .tabs-container {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            display: flex;
-            gap: 8px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--muted);
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .tab-btn:hover {
-            background: var(--light-bg);
-            color: var(--dark-text);
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, var(--accent1), var(--accent2));
-            color: white;
-            box-shadow: 0 2px 8px rgba(0, 92, 151, 0.3);
-        }
-
-        .tab-count {
-            display: inline-block;
-            margin-left: 8px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            font-size: 12px;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        .tab-btn.active .tab-count {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        #groupsContainer {
-            min-height: 400px;
-        }
-
-        /* Group Cards */
-        .group-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            margin-bottom: 20px;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-        }
-
-        .group-card:hover {
-            box-shadow: 0 4px 12px var(--shadow-color);
-            transform: translateY(-2px);
-        }
-
-        .group-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .group-header-left {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex: 1;
-        }
-
-        .group-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .group-info h4 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--dark-text);
-        }
-
-        .group-info p {
-            font-size: 13px;
-            color: var(--muted);
-        }
-        
-        /* === Status Badge & Progress Bar === */
-        .group-status-badge {
-            display: inline-block;
-            padding: 4px 10px; /* Tweaked padding */
-            border-radius: 20px; /* Kept border radius */
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap; /* Kept from old styles */
-        }
-        .badge-open { background: #e8f5e9; color: #2e7d32; }
-        .badge-filling { background: #fff8e1; color: #f57c00; }
-        .badge-full { background: #ffebee; color: #c62828; }
-        .badge-joined {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .member-count {
-            margin-bottom: 15px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--muted);
-        }
-        .member-count span {
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-        .member-progress-bar {
-          width: 100%;
-          height: 6px; /* Tweaked height */
-          background: #e0e0e0;
-          border-radius: 3px; /* Tweaked radius */
-          margin-top: 6px; /* Tweaked margin */
-          overflow: hidden; /* Added */
-        }
-        .progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, var(--accent1), var(--accent2)); /* Updated gradient */
-          border-radius: 3px;
-          transition: width 0.3s;
-        }
-        /* === END Status Badge & Progress Bar === */
-
-        .group-description {
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: var(--dark-text);
-        }
-
-        .group-description h5 {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-
-        .group-skills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .skill-tag {
-            background: #e6f2ff;
-            color: var(--accent1);
-            padding: 6px 12px;
+        .nav-dock {
+            pointer-events: auto;
+            background: var(--paper-card);
+            padding: 0.75rem 2rem;
             border-radius: 16px;
-            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: var(--border-card);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--ink-primary);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-brand i { color: var(--accent-clay); }
+
+        .nav-items { display: flex; gap: 2rem; }
+
+        .nav-link {
+            color: var(--ink-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
             font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .nav-link:hover { color: var(--ink-primary); }
+        .nav-link.active { color: var(--accent-clay); }
+        .nav-link.active::after {
+            content: '•'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); color: var(--accent-clay); font-size: 1.2rem;
+        }
+
+        .nav-user {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--paper-inset);
+            border: 1px solid var(--accent-clay);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden;
+            margin-left: 1rem;
+        }
+        .nav-user img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-user span { font-weight: 700; color: var(--accent-clay); font-size: 0.8rem; }
+
+        /* --- Main Layout --- */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 260px 1fr 280px;
+            gap: 2.5rem;
+        }
+
+        /* --- Card Style Utility --- */
+        .paper-card {
+            background: var(--paper-card);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            border: var(--border-card);
+            position: relative;
+        }
+
+        /* --- Sidebar --- */
+        .profile-mini-header { text-align: center; margin-bottom: 2rem; }
+        .sidebar-avatar {
+            width: 90px; height: 90px; margin: 0 auto 1rem;
+            border-radius: 50%; border: 4px solid var(--paper-bg);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: var(--paper-inset);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar-name { font-size: 1.25rem; color: var(--ink-primary); margin-bottom: 0.25rem; }
+        .sidebar-role { font-size: 0.85rem; color: var(--accent-clay); font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 0;
+            color: var(--ink-secondary); cursor: pointer; transition: all 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { color: var(--ink-primary); padding-left: 8px; }
+        .menu-item i { width: 20px; color: var(--accent-clay); opacity: 0.7; }
+
+        /* --- Feed Section --- */
+        .search-bar { position: relative; margin-bottom: 2.5rem; }
+        .search-input {
+            width: 100%; background: var(--paper-inset); border: none;
+            padding: 16px 20px 16px 50px; border-radius: 12px;
+            color: var(--ink-primary); font-family: 'Inter', sans-serif; font-size: 1rem;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s; outline: none;
+        }
+        .search-input:focus { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8), inset -1px -1px 0 rgba(255,255,255,0.1); }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--ink-tertiary); }
+
+        .feed-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 1.5rem; border-bottom: 2px solid var(--paper-card); padding-bottom: 10px;
+        }
+        .feed-title { font-size: 2rem; color: var(--ink-primary); line-height: 1; }
+        .feed-filters { display: flex; gap: 1.5rem; }
+        .filter-link {
+            background: none; border: none; color: var(--ink-secondary);
+            font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; padding-bottom: 10px; position: relative; transition: color 0.3s;
+        }
+        .filter-link:hover { color: var(--ink-primary); }
+        .filter-link.active { color: var(--accent-clay); }
+        .filter-link.active::after {
+            content: ''; position: absolute; bottom: -12px; left: 0; width: 100%; height: 2px; background: var(--accent-clay);
+        }
+
+        /* --- Group Cards (User's JS generates these classes) --- */
+        .group-card {
+            background: var(--paper-card);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.02);
+            box-shadow: var(--shadow-card);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .group-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-floating);
+        }
+
+        .group-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+        .group-header-left { display: flex; gap: 1rem; align-items: center; }
+        
+        .group-icon {
+            width: 56px; height: 56px; background: var(--paper-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+            color: var(--ink-primary); border-radius: 8px; flex-shrink: 0;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .group-info h4 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.2rem; color: var(--ink-primary); }
+        .group-info p { font-size: 0.85rem; color: var(--ink-tertiary); font-family: 'Inter', sans-serif; }
+
+        /* Status Badges */
+        .group-status-badge {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+            padding: 6px 12px; border-radius: 4px; background: var(--paper-inset);
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6);
+        }
+        .badge-open { color: var(--status-green-text); }
+        .badge-filling { color: var(--status-yellow-text); }
+        .badge-full { color: var(--status-red-text); }
+        .badge-joined { color: var(--accent-clay); }
+
+        /* Content */
+        .group-description {
+            font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.7;
+            color: var(--ink-secondary); margin-bottom: 2rem; font-weight: 300;
+        }
+        .group-description h5 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-tertiary); margin-bottom: 0.5rem; }
+
+        .group-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+        .skill-tag {
+            display: inline-block; font-size: 0.75rem; color: var(--ink-secondary);
+            border: 1px solid var(--ink-tertiary); padding: 4px 10px; border-radius: 50px;
+            background: transparent;
         }
 
         .group-timeline {
-            font-size: 13px;
-            color: var(--muted);
-            padding: 12px;
-            background: var(--light-bg);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            line-height: 1.5;
+            background: var(--paper-inset); padding: 10px 15px; border-radius: 6px;
+            font-size: 0.9rem; color: var(--ink-secondary); margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Fix for timeline typo */
-        .group-timeline:empty {
-            display: none;
-        }
-
+        /* Footer & Buttons */
         .group-card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .group-meta { font-size: 0.9rem; color: var(--ink-primary); font-weight: 600; }
+
+        .join-group-btn, .leave-group-btn, .load-more {
+            padding: 12px 28px; border-radius: 4px; font-family: 'Inter', sans-serif;
+            font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 0 var(--accent-clay-dark); transform: translateY(0);
+            border: none; text-transform: uppercase; letter-spacing: 0.05em;
         }
 
-        .group-meta {
-            font-size: 13px;
-            color: var(--muted);
+        .join-group-btn, .load-more {
+            background-color: var(--accent-clay); color: #fff;
         }
-
-        .join-group-btn, .leave-group-btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            flex-shrink: 0;
+        .join-group-btn:hover:not(:disabled), .load-more:hover:not(:disabled) {
+            background-color: #eb8b70; transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
         }
-
-        .join-group-btn {
-            background: var(--accent1);
-            color: white;
-        }
-
-        .join-group-btn:hover:not(:disabled) {
-            background: var(--accent2);
-            transform: scale(1.05);
-        }
-
         .join-group-btn:disabled {
-            background: #cbd5e0;
-            color: #718096;
-            cursor: not-allowed;
+            background-color: var(--paper-inset); color: var(--ink-tertiary);
+            box-shadow: none; cursor: not-allowed;
         }
 
         .leave-group-btn {
-            background: #ef4444; /* Changed to red for danger/leave action */
-            color: white;
+            background: transparent; color: var(--status-red-text); border: 1px solid var(--status-red-text);
+            box-shadow: none;
         }
+        .leave-group-btn:hover { background: var(--status-red-bg); transform: none; }
 
-        .leave-group-btn:hover {
-            background: #dc2626; /* Darker red */
-        }
+        /* --- Right Sidebar --- */
+        .trending-card { @extend .paper-card; }
+        .trending-header { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-tertiary); margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .trending-item { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; cursor: pointer; }
+        .trending-item:hover .trending-topic { color: var(--accent-clay); }
+        .trending-topic { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.1rem; color: var(--ink-primary); transition: color 0.2s; }
+        .trending-count { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--ink-tertiary); }
 
-        .no-groups {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--muted);
-        }
-
-        .no-groups i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #cbd5e0;
-        }
-
-        .no-groups h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: var(--dark-text);
-        }
-
-        .load-more {
-            display: block;
-            margin: 20px auto;
-            padding: 12px 24px;
-            background: var(--accent1);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .load-more:hover {
-            background: var(--accent2);
-            transform: translateY(-2px);
-        }
-
-        .load-more:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Right Sidebar */
-        .right-sidebar {
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-
-        .trending-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            margin-bottom: 20px;
-        }
-
-        .trending-card h4 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: var(--dark-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .trending-item {
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .trending-item:hover {
-            background: var(--light-bg);
-            padding-left: 10px;
-            border-radius: 8px;
-        }
-
-        .trending-item:last-child {
-            border-bottom: none;
-        }
-
-        .trending-topic {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-
-        .trending-item:hover .trending-topic {
-            color: var(--accent1);
-        }
-
-        .trending-count {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { 
-                transform: translateY(50px); 
-                opacity: 0; 
-            }
-            to { 
-                transform: translateY(0); 
-                opacity: 1; 
-            }
-        }
-
+        /* --- Modal --- */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(26, 25, 24, 0.95); align-items: center; justify-content: center; }
+        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        
         .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease;
-            position: relative;
+            background: var(--paper-card); width: 90%; max-width: 650px; padding: 3rem;
+            border-radius: 4px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.05); max-height: 90vh; overflow-y: auto;
         }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+        .modal-header h2 { font-size: 2rem; color: var(--ink-primary); line-height: 1.1; }
+        .close-btn { background: none; border: none; color: var(--ink-tertiary); font-size: 2rem; cursor: pointer; font-family: 'Playfair Display', serif; }
+        .close-btn:hover { color: var(--accent-clay); }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        /* --- Skeleton --- */
+        .skeleton-group-card { background: var(--paper-card); border-radius: 8px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.02); }
+        .skeleton-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--paper-inset); animation: pulse 1.5s infinite; }
+        .skeleton-text { height: 14px; background: var(--paper-inset); margin-bottom: 10px; border-radius: 4px; animation: pulse 1.5s infinite; }
+        .skeleton-text.short { width: 60%; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .modal-header h2 {
-            font-size: 24px;
-            color: var(--dark-text);
-        }
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px; color: var(--ink-secondary); border: 1px dashed var(--ink-tertiary); border-radius: 8px; margin-top: 2rem; }
+        .empty-state .icon { font-size: 3rem; color: var(--paper-inset); display: block; margin-bottom: 1rem; text-shadow: 1px 1px 0 rgba(255,255,255,0.1); }
+        .empty-state h3 { color: var(--ink-primary); margin-bottom: 0.5rem; font-family: 'Inter', sans-serif; }
+        .empty-state button { margin-top: 1rem; background: var(--accent-clay); color: white; padding: 10px 20px; border:none; border-radius:4px; cursor:pointer; }
 
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 28px;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.3s;
-            padding: 5px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            color: var(--dark-text);
-            background: var(--light-bg);
-            transform: scale(1.2);
-        }
-
-        .members-section {
-            margin-top: 25px;
-        }
-
-        .members-section h3 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: var(--dark-text);
-        }
-
-        .members-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .member-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--light-bg);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .member-card:hover {
-            background: #e0e8f0;
-            transform: translateX(4px);
-            box-shadow: 0 2px 8px var(--shadow-color);
-        }
-
-        .member-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent1), var(--accent2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .member-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .member-info {
-            flex: 1;
-        }
-
-        .member-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-
-        .member-role {
-            font-size: 12px;
-            color: var(--muted);
-        }
+        /* Member Progress Bar */
+        .member-progress-bar { width: 100%; height: 6px; background: var(--paper-inset); border-radius: 3px; margin-top: 8px; overflow: hidden; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); }
+        .progress-fill { height: 100%; background: var(--accent-clay); border-radius: 3px; transition: width 0.3s; }
 
         /* Responsive */
-/* 🔥 IMPROVED RESPONSIVE DESIGN - SAME LAYOUT ALL DEVICES */
-
-/* Mobile and Tablet - Stack layout */
-@media (max-width: 1024px) {
-    .main-container {
-        margin-left: 0;
-        padding: 10px;
-    }
-
-    .nav-sidebar {
-        width: 60px;
-        bottom: 0;
-        top: auto;
-        flex-direction: row;
-        height: 60px;
-        padding: 0;
-        border-top: 1px solid var(--border-color);
-        border-right: none;
-    }
-
-    .nav-sidebar:hover {
-        width: 60px;
-        height: 60px;
-    }
-
-    .nav-avatar {
-        width: 40px;
-        height: 40px;
-        margin: 0;
-    }
-
-    .nav-items {
-        display: flex;
-        flex-direction: row;
-        width: auto;
-    }
-
-    .nav-item {
-        width: 60px;
-        height: 60px;
-        padding: 0;
-        justify-content: center;
-    }
-
-    .nav-label, .nav-divider {
-        display: none !important;
-    }
-
-    .content-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .left-sidebar, .right-sidebar {
-        display: none;
-    }
-
-    /* Keep same card layout */
-    .group-card {
-        margin-bottom: 15px;
-        padding: 18px;
-    }
-
-    .tabs-container {
-        flex-direction: row; /* Keep horizontal tabs */
-        overflow-x: auto;
-    }
-
-    .tab-btn {
-        min-width: 120px;
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-
-    .group-card-footer {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .join-group-btn, .leave-group-btn {
-        width: 100%;
-    }
-
-    .modal-content {
-        width: 95%;
-        padding: 20px;
-        margin: 10px;
-        max-height: 90vh;
-    }
-}
-
-/* Large screens - keep original layout */
-@media (min-width: 1025px) {
-    .main-container {
-        margin-left: 72px;
-    }
-
-    .content-grid {
-        display: grid;
-        grid-template-columns: 300px 1fr 320px;
-        gap: 20px;
-    }
-}
-
-/* Extra small mobile */
-@media (max-width: 480px) {
-    .group-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .group-status-badge {
-        margin-top: 10px;
-    }
-
-    .search-container input {
-        padding: 12px 16px 12px 40px;
-        font-size: 14px;
-    }
-
-    .tab-btn {
-        font-size: 13px;
-        padding: 10px 12px;
-    }
-
-    .skill-tag {
-        font-size: 11px;
-        padding: 5px 10px;
-    }
-}
-
-        /* Loading animation */
-        .loading-groups {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--muted);
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr; padding: 1rem; }
+            .left-sidebar, .right-sidebar { display: none; }
+            .navbar { padding: 1rem; }
+            .nav-dock { width: 100%; justify-content: space-between; gap: 0; }
+            .nav-items { display: none; } /* Mobile handling */
         }
-
-        .loading-spinner {
-            border: 3px solid var(--light-bg);
-            border-top: 3px solid var(--accent1);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* === ADDED CSS FOR SEARCH ENHANCEMENT === */
-        #groups-count-info {
-            padding-top: 10px;
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 500;
-            min-height: 20px;
-        }
-        
-        .empty-state {
-          text-align: center;
-          padding: 40px 20px;
-          color: #666;
-          background: var(--light-bg);
-          border-radius: 12px;
-          margin-top: 10px;
-        }
-        .empty-state .icon {
-          font-size: 56px;
-          display: block;
-          margin-bottom: 20px;
-          font-style: normal;
-          color: var(--accent1);
-        }
-        .empty-state h3 {
-          font-size: 20px;
-          margin-bottom: 10px;
-          color: var(--dark-text);
-        }
-        .empty-state p {
-          margin-bottom: 20px;
-          font-size: 14px;
-          color: var(--muted);
-        }
-        .empty-state button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: var(--accent1);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .empty-state button:hover {
-            background: var(--accent2);
-        }
-        /* === END OF ADDED CSS === */
-        
-        /* === ADDED CSS FOR SKELETON LOADER === */
-        .skeleton-group-card {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding: 18px;
-          border-radius: 8px;
-          background: #fff;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-          margin-bottom: 18px;
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-        .skeleton-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: #ececec;
-        }
-        .skeleton-text {
-          width: 90%;
-          height: 14px;
-          border-radius: 4px;
-          background: #ececec;
-        }
-        .skeleton-text.short {
-          width: 60%;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        /* === END SKELETON CSS === */
-
-            
     </style>
 </head>
 <body>
-    <aside class="nav-sidebar">
-        <div class="nav-avatar" onclick="window.location.href='profile.html'">
-            <img id="navAvatarImage" style="display:none" alt="profilePic">
-            <div class="nav-initials" id="navInitials">U</div>
+
+    <nav class="navbar">
+        <div class="nav-dock">
+            <a href="mainpage.html" class="nav-brand">
+                <i class="fas fa-layer-group"></i> HUDDLE
+            </a>
+            
+            <div class="nav-items">
+                <a class="nav-link active" data-page="mainpage">Home</a>
+                <a class="nav-link" data-page="qa">Q&A</a>
+                <a class="nav-link" data-page="discuss">Rooms</a>
+                <a class="nav-link" data-page="groups">Create</a>
+                <a class="nav-link" data-page="notifications">Alerts</a>
+            </div>
+
+            <div class="nav-user" onclick="window.location.href='profile.html'">
+                <img id="navAvatarImage" style="display:none" alt="User">
+                <span id="navInitials">U</span>
+            </div>
         </div>
-        <nav class="nav-items">
-            <div class="nav-item active" data-page="mainpage" onclick="window.location.href='mainpage.html'">
-                <i class="fas fa-home"></i>
-                <span class="nav-label">Home</span>
-            </div>
-            <div class="nav-item" data-page="profile" onclick="window.location.href='profile.html'">
-                <i class="fas fa-user"></i>
-                <span class="nav-label">Profile</span>
-            </div>
-            <div class="nav-item" data-page="qa" onclick="window.location.href='qa.html'">
-                <i class="fas fa-question-circle"></i>
-                <span class="nav-label">QA</span>
-            </div>
-            <div class="nav-item" data-page="discuss" onclick="window.location.href='discuss-room.html'">
-                <i class="fas fa-comments"></i>
-                <span class="nav-label">Discussions</span>
-            </div>
-            <div class="nav-item" data-page="groups" onclick="window.location.href='group-creationpage.html'">
-                <i class="fas fa-users"></i>
-                <span class="nav-label">Create Group</span>
-            </div>
-            <div class="nav-divider"></div>
-            <div class="nav-item" data-page="notifications" onclick="window.location.href='notifications.html'">
-                <i class="fas fa-bell"></i>
-                <span class="nav-label">Notifications</span>
-            </div>
-            <div class="nav-item" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="nav-label">Logout</span>
-            </div>
-        </nav>
-    </aside>
+    </nav>
 
     <div class="main-container">
-        <div class="content-grid">
-            <aside class="left-sidebar">
-                <div class="profile-card">
-                    <div class="profile-header">
-                        <div class="profile-pic" id="sidebarAvatar">
-                            <img id="sidebarAvatarImage" style="display:none" alt="Profile Photo">
-                            <div class="profile-pic-initials" id="sidebarInitials">AM</div>
-                        </div>
-                        <div class="profile-info">
-                            <h3 id="sidebarName">Alex Morgan</h3>
-                            <p id="sidebarRole">CS Student at PSIT</p>
-                        </div>
+        
+        <aside class="left-sidebar">
+            <div class="paper-card">
+                <div class="profile-mini-header">
+                    <div class="sidebar-avatar">
+                        <img id="sidebarAvatarImage" style="display:none">
+                        <div id="sidebarInitials" style="color:var(--ink-secondary);font-family:'Playfair Display', serif;font-size:2rem;">U</div>
                     </div>
+                    <h3 class="sidebar-name" id="sidebarName">Loading...</h3>
+                    <p class="sidebar-role" id="sidebarRole">...</p>
                 </div>
-                
-                <div class="quick-links">
-                    <h4>Quick Links</h4>
-                    <div class="quick-link" onclick="window.location.href='profile.html'">
-                        <i class="fas fa-user"></i>
-                        <span>My Profile</span>
-                    </div>
-                    <div class="quick-link" onclick="window.location.href='qa.html'">
-                        <i class="fas fa-question-circle"></i>
-                        <span>QA Forum</span>
-                    </div>
-                    <div class="quick-link" onclick="switchTab('myGroups')">
-                        <i class="fas fa-users"></i>
-                        <span>My Groups</span>
-                    </div>
-                    <div class="quick-link" onclick="window.location.href='discuss-room.html'">
-                        <i class="fas fa-comments"></i>
-                        <span>Discussions</span>
-                    </div>
+                <div class="menu-item" onclick="window.location.href='profile.html'">
+                    <i class="fas fa-id-card-alt"></i> My Profile
                 </div>
-            </aside>
+                <div class="menu-item" onclick="window.location.href='qa.html'">
+                    <i class="fas fa-question-circle"></i> QA Forum
+                </div>
+                <div class="menu-item" onclick="switchTab('myGroups')">
+                    <i class="fas fa-users"></i> My Groups
+                </div>
+                <div class="menu-item" onclick="logout()">
+                    <i class="fas fa-door-open"></i> Sign Out
+                </div>
+            </div>
+        </aside>
 
-            <main class="feed">
-                <div class="search-section">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="groupSearchInput" 
-                               placeholder="Search groups by name, skills, or description..."
-                               autocomplete="off"> </div>
-                    <small style="color: var(--muted); font-size: 12px;">
-                        Try searching for "web development" or "machine learning"
-                    </small>
-                    <div id="groups-count-info"></div>
+        <main class="feed">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="groupSearchInput" placeholder="Filter projects by name or skill..." autocomplete="off">
+            </div>
+
+            <div class="feed-header">
+                <h1 class="feed-title">Explore</h1>
+                <div class="feed-filters">
+                    <button class="filter-link active" id="availableTab" onclick="switchTab('available')">Open</button>
+                    <button class="filter-link" id="myGroupsTab" onclick="switchTab('myGroups')">Joined</button>
+                </div>
+            </div>
+
+            <div id="groups-count-info" style="font-family:'Inter'; font-size:0.85rem; color:var(--ink-tertiary); margin-bottom:2rem; font-style:italic;"></div>
+
+            <div id="groupsContainer">
                 </div>
 
-                <div class="tabs-container">
-                    <button class="tab-btn active" id="availableTab" onclick="switchTab('available')">
-                        Available Groups
-                        <span class="tab-count" id="availableCount">0</span>
-                    </button>
-                    <button class="tab-btn" id="myGroupsTab" onclick="switchTab('myGroups')">
-                        My Groups
-                        <span class="tab-count" id="myGroupsCount">0</span>
-                    </button>
+            <button id="loadMoreBtn" class="load-more" style="width:100%; margin-top:20px; display:none;" onclick="loadMoreGroups()">
+                LOAD MORE
+            </button>
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="paper-card trending-card">
+                <div class="trending-header">Trending Topics</div>
+                <div class="trending-item" onclick="searchByTopic('WebDevelopment')">
+                    <span class="trending-topic">#WebDevelopment</span>
+                    <span class="trending-count">1.2k</span>
                 </div>
-
-                <div id="groupsContainer">
-                    </div>
-
-                <button class="load-more" id="loadMoreBtn" onclick="loadMoreGroups()" style="display: none;">
-                    Load More Groups
-                </button>
-            </main>
-
-            <aside class="right-sidebar">
-                <div class="trending-card">
-                    <h4>
-                        <i class="fas fa-fire"></i>
-                        Trending Topics
-                    </h4>
-                    <div class="trending-item" onclick="searchByTopic('WebDevelopment')">
-                        <div class="trending-topic">#WebDevelopment</div>
-                        <div class="trending-count">1,234 posts</div>
-                    </div>
-                    <div class="trending-item" onclick="searchByTopic('MachineLearning')">
-                        <div class="trending-topic">#MachineLearning</div>
-                        <div class="trending-count">987 posts</div>
-                    </div>
-                    <div class="trending-item" onclick="searchByTopic('Java')">
-                        <div class="trending-topic">#Java</div>
-                        <div class="trending-count">756 posts</div>
-                    </div>
-                    <div class="trending-item" onclick="searchByTopic('Python')">
-                        <div class="trending-topic">#Python</div>
-                        <div class="trending-count">543 posts</div>
-                    </div>
-                    <div class="trending-item" onclick="searchByTopic('AndroidDev')">
-                        <div class="trending-topic">#AndroidDev</div>
-                        <div class="trending-count">432 posts</div>
-                    </div>
-                    <div class="trending-item" onclick="searchByTopic('DataScience')">
-                        <div class="trending-topic">#DataScience</div>
-                        <div class="trending-count">321 posts</div>
-                    </div>
+                <div class="trending-item" onclick="searchByTopic('AI')">
+                    <span class="trending-topic">#AI</span>
+                    <span class="trending-count">980</span>
                 </div>
-
-                <div class="trending-card">
-                    <h4>
-                        <i class="fas fa-lightbulb"></i>
-                        Quick Tips
-                    </h4>
-                    <div style="font-size: 13px; line-height: 1.6; color: var(--dark-text);">
-                        <p style="margin-bottom: 12px;">
-                            💡 Use specific tags like <strong>#Java</strong>, <strong>#Python</strong> 
-                            when asking questions to get better answers
-                        </p>
-                        <p style="margin-bottom: 12px;">
-                            👥 Join groups with matching skills to find perfect project partners
-                        </p>
-                        <p>
-                            📱 Enable notifications to stay updated on new group members and discussions
-                        </p>
-                    </div>
+                <div class="trending-item" onclick="searchByTopic('Java')">
+                    <span class="trending-topic">#Java</span>
+                    <span class="trending-count">750</span>
                 </div>
-            </aside>
-        </div>
+                <div class="trending-item" onclick="searchByTopic('Python')">
+                    <span class="trending-topic">#Python</span>
+                    <span class="trending-count">540</span>
+                </div>
+            </div>
+        </aside>
+
     </div>
 
     <div id="groupModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalGroupName">Group Details</h2>
-                <button class="close-btn" onclick="closeGroupModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="close-btn" onclick="closeGroupModal()">×</button>
             </div>
-            <div id="modalGroupDetails">
-                </div>
+            <div id="modalGroupDetails" style="margin-bottom: 2rem; color: var(--ink-secondary); line-height: 1.6;"></div>
+            
             <div class="members-section">
-                <h3>Group Members</h3>
-                <div id="membersList" class="members-list">
-                    <div style="text-align:center;padding:20px;color:var(--muted)">Loading members...</div>
-                </div>
+                <h3 style="color:var(--ink-primary); margin-bottom:1rem; font-size:1rem; text-transform:uppercase; letter-spacing:0.05em;">Team Members</h3>
+                <div id="membersList" style="display:grid; gap:10px;"></div>
             </div>
         </div>
     </div>
@@ -1275,10 +466,9 @@
         let currentUser = null;
         let allGroups = [];
         let currentTab = 'available';
-        let displayedGroups = []; // This seems unused, can be removed, but fine to leave
         let displayedCount = 0;
         const groupsPerLoad = 10;
-        let totalGroupsLoaded = 0; // This seems unused, can be removed
+        let searchQuery = "";
 
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', async () => {
@@ -1294,26 +484,22 @@
             await loadGroups();
             
             // Set active nav item
-            // Check for both 'mainpage' and empty path for index
             const path = window.location.pathname.split('/').pop();
             const currentPage = (path === '' || path === 'mainpage.html') ? 'mainpage' : path.replace('.html', '');
             
-            const navItems = document.querySelectorAll('.nav-item[data-page]');
-            navItems.forEach(item => {
-                item.classList.toggle('active', item.getAttribute('data-page') === currentPage);
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.dataset.page === currentPage) link.classList.add('active');
             });
             
             // Add event listener for modal backdrop click
             const modal = document.getElementById('groupModal');
             if (modal) {
                 modal.addEventListener('click', function(event) {
-                    if (event.target === this) { // Click on backdrop only
-                        closeGroupModal();
-                    }
+                    if (event.target === this) closeGroupModal();
                 });
             }
             
-            // Setup navigation listeners (moved from bottom for clarity)
+            // Setup navigation listeners
             setupNavigation();
         });
 
@@ -1361,13 +547,14 @@
             for (let i = 0; i < count; i++) {
                 skeletonHTML += `
                   <div class="skeleton-group-card">
-                    <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom:1rem;">
                         <div class="skeleton-avatar"></div>
-                        <div>
-                            <div class="skeleton-text short" style="height: 18px; margin-bottom: 5px;"></div>
-                            <div class="skeleton-text" style="height: 10px;"></div>
+                        <div style="flex:1">
+                            <div class="skeleton-text short" style="height: 20px; width:40%; margin-bottom: 5px;"></div>
+                            <div class="skeleton-text" style="height: 12px; width:20%;"></div>
                         </div>
                     </div>
+                    <div class="skeleton-text"></div>
                     <div class="skeleton-text"></div>
                     <div class="skeleton-text short"></div>
                   </div>
@@ -1375,13 +562,11 @@
             }
             container.innerHTML = skeletonHTML;
         }
-        // === END Skeleton Function ===
 
         async function loadGroups() {
             showGroupSkeletons(3);
 
             try {
-                // Use the API_URL variable
                 const response = await fetch(`${API_URL}/getavailablegroups`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -1408,67 +593,38 @@
                     
                     updateTabCounts();
                     displayFilteredGroups();
-                    
-                    console.log(`✅ Loaded ${allGroups.length} groups`);
                 } else {
-                    document.getElementById('groupsContainer').innerHTML = `
-                        <div class="no-groups">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>No groups available</h3>
-                            <p>Unable to load groups at this time. Please try again later.</p>
-                            <button class="load-more" onclick="loadGroups()" style="background: var(--accent1); margin-top: 15px;">
-                                Try Again
-                            </button>
-                        </div>
-                    `;
+                    renderErrorState('Unable to load groups.');
                 }
             } catch (error) {
                 console.error('Error loading groups:', error);
-                document.getElementById('groupsContainer').innerHTML = `
-                    <div class="no-groups">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Connection Error</h3>
-                        <p>Unable to connect to server. Please check your connection.</p>
-                        <button class="load-more" onclick="loadGroups()" style="background: var(--accent1); margin-top: 15px;">
-                            Retry
-                        </button>
-                    </div>
-                `;
+                renderErrorState('Connection Error. Please retry.');
             }
         }
 
+        function renderErrorState(msg) {
+            document.getElementById('groupsContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle icon"></i>
+                    <h3>${msg}</h3>
+                    <button onclick="loadGroups()">Retry</button>
+                </div>`;
+        }
+
         function updateTabCounts() {
-            if (!allGroups || !Array.isArray(allGroups) || !currentUser) {
-                console.log('Cannot update tab counts: missing data');
-                return;
-            }
+            if (!allGroups) return;
+            const myGroups = allGroups.filter(g => g.members && g.members.map(String).includes(String(currentUser.id)));
+            const available = allGroups.filter(g => (!g.members || !g.members.map(String).includes(String(currentUser.id))) && !g.isFull);
             
-            const myGroups = allGroups.filter(g => {
-                const members = g.members || [];
-                const memberIds = members.map(m => String(m));
-                return memberIds.includes(String(currentUser.id));
-            });
-            
-            const availableGroups = allGroups.filter(g => {
-                const members = g.members || [];
-                const memberIds = members.map(m => String(m));
-                return !memberIds.includes(String(currentUser.id)) && !g.isFull;
-            });
-            
-            document.getElementById('myGroupsCount').textContent = myGroups.length;
-            document.getElementById('availableCount').textContent = availableGroups.length;
-            
-            console.log(`Updated counts: ${myGroups.length} my groups, ${availableGroups.length} available`);
+            // If you want to show counts, uncomment or add elements back. 
+            // The design mockup didn't explicitly show counts in tabs to keep it clean, 
+            // but logic remains here if needed.
         }
 
         function switchTab(tab) {
             currentTab = tab;
-            
-            // Update active tab
             document.getElementById('availableTab').classList.toggle('active', tab === 'available');
             document.getElementById('myGroupsTab').classList.toggle('active', tab === 'myGroups');
-            
-            // Reset search and pagination
             document.getElementById('groupSearchInput').value = '';
             searchQuery = '';
             displayedCount = 0;
@@ -1477,95 +633,57 @@
 
         // --- Debounce Utility ---
         function debounce(func, wait) {
-          let timeout;
-          return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-          };
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
         }
         
-        let searchQuery = "";
-        
         document.getElementById('groupSearchInput').oninput = debounce(function(e) {
-          displayedCount = 0; // CRITICAL: Reset pagination counter
-          searchGroups(e.target.value);
+            displayedCount = 0;
+            searchGroups(e.target.value);
         }, 300);
         
         function searchGroups(query) {
-          searchQuery = query.toLowerCase().trim();
-          displayedCount = 0; // CRITICAL: Reset pagination counter
-          displayFilteredGroups();
+            searchQuery = query.toLowerCase().trim();
+            displayedCount = 0;
+            displayFilteredGroups();
         }
         
-        // Enhanced filter for all group fields and both tabs
         function displayFilteredGroups() {
             const container = document.getElementById('groupsContainer');
-            if (searchQuery && displayedCount === 0) {
-                 container.innerHTML = `<div class="loading-groups">
-                    <div class="loading-spinner"></div>
-                    Searching for groups matching "${escapeHtml(searchQuery)}"...
-                </div>`;
-            }
-
+            
             let filteredGroups = [...allGroups];
-            
             if (searchQuery) {
-              filteredGroups = filteredGroups.filter(group => {
-                let fields = [
-                  group.projectname,
-                  group.descriptionobjective,
-                  ...(group.requiredskills || []),
-                  String(group.members?.length ?? 0), // Member count
-                  group.projecttimeline || ''
-                ];
-                return fields.join(' ').toLowerCase().includes(searchQuery);
-              });
+                filteredGroups = filteredGroups.filter(group => {
+                    let fields = [
+                        group.projectname,
+                        group.descriptionobjective,
+                        ...(group.requiredskills || []),
+                        group.projecttimeline || ''
+                    ];
+                    return fields.join(' ').toLowerCase().includes(searchQuery);
+                });
             }
             
-            // Separate into Available/My Groups for tab logic
-        let availableGroups = filteredGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull);            let myGroups = filteredGroups.filter(g => g.members?.includes(String(currentUser.id)));
-            
-            // Render tab based on which is active
+            let groupsToDisplay = [];
             if (currentTab === "available") {
-              displayGroupsBatch(availableGroups, 'available');
-            showResultsCount(availableGroups.length, allGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull).length);            } else {
-              displayGroupsBatch(myGroups, 'myGroups');
-            showResultsCount(myGroups.length, allGroups.filter(g => g.members?.includes(String(currentUser.id))).length);            }
-        }
-        
-        function showResultsCount(filtered, total) {
-          let counterDiv = document.getElementById('groups-count-info');
-          if (!counterDiv) {
-            counterDiv = document.createElement('div');
-            counterDiv.id = 'groups-count-info';
-            document.querySelector('.search-section').appendChild(counterDiv);
-          }
-          
-          if (filtered === 0 && searchQuery) {
-            counterDiv.innerHTML = `
-              <div class="empty-state">
-                <i class="icon">🔍</i>
-                <h3>No groups match "${escapeHtml(searchQuery)}"</h3>
-                <p>Try different keywords or create a new group for this topic.</p>
-                <button onclick="clearSearch()">Clear Search</button>
-              </div>
-            `;
-          } else if (searchQuery && filtered < total) {
-            counterDiv.textContent = `Showing ${filtered} of ${total} groups matching "${escapeHtml(searchQuery)}"`;
-          } else if (searchQuery && filtered === total) {
-             counterDiv.textContent = `Showing all ${filtered} groups matching "${escapeHtml(searchQuery)}"`;
-          } else if (filtered < total) {
-            counterDiv.textContent = `Showing ${filtered} of ${total} groups`;
-          } else {
-            counterDiv.textContent = `Showing ${filtered} groups`;
-          }
+                groupsToDisplay = filteredGroups.filter(g => !g.members?.map(String).includes(String(currentUser.id)) && !g.isFull);
+            } else {
+                groupsToDisplay = filteredGroups.filter(g => g.members?.map(String).includes(String(currentUser.id)));
+            }
+            
+            document.getElementById('groups-count-info').textContent = groupsToDisplay.length ? `${groupsToDisplay.length} Projects Found` : '';
+
+            displayGroupsBatch(groupsToDisplay, currentTab);
         }
         
         function clearSearch() {
-          document.getElementById('groupSearchInput').value = "";
-          searchQuery = "";
-          displayedCount = 0; // Added reset for pagination
-          displayFilteredGroups();
+            document.getElementById('groupSearchInput').value = "";
+            searchQuery = "";
+            displayedCount = 0;
+            displayFilteredGroups();
         }
 
         function displayGroupsBatch(groupsToDisplay, tabName) {
@@ -1574,602 +692,252 @@
             const endIndex = startIndex + groupsPerLoad;
             const batchGroups = groupsToDisplay.slice(startIndex, endIndex);
             
-            if (batchGroups.length === 0 && startIndex === 0) {
-                
-                // If a search is active, showResultsCount already handled the empty state.
-                if (searchQuery) {
-                    groupsContainer.innerHTML = ''; // Just clear the container
-                    document.getElementById('loadMoreBtn').style.display = 'none';
-                    return;
-                }
+            if (startIndex === 0) groupsContainer.innerHTML = '';
 
-                // If no search, show the default "no groups" message for the tab
-                if (tabName === 'myGroups') {
-                    const message = "You haven't joined any groups yet. Browse available groups to join!";
-                    groupsContainer.innerHTML = `
-                        <div class="no-groups">
-                            <i class="fas fa-users-slash"></i>
-                            <h3>No Groups Yet</h3>
-                            <p>${message}</p>
-                            <button class="load-more" onclick="switchTab('available')" style="background: var(--accent1); margin-top: 15px;">Browse Available Groups</button>
-                        </div>
-                    `;
-                } else {
-                    const myGroupsCount = allGroups.filter(g => g.members?.includes(String(currentUser.id))).length;
-                    
-                    let message, heading;
-                    if (myGroupsCount > 0) {
-                        heading = "All Caught Up!";
-                        message = "You've joined all available groups! Create a new one to collaborate with others.";
-                    } else {
-                        heading = "No Groups Available";
-                        message = "Be the first to create a group and start collaborating!";
-                    }
-                    
+            if (batchGroups.length === 0 && startIndex === 0) {
+                if (searchQuery) {
                     groupsContainer.innerHTML = `
                         <div class="empty-state">
-                            <i class="icon">🚀</i>
-                            <h3>${heading}</h3>
-                            <p>${message}</p>
-                            <button onclick="location.href='group-creationpage.html'">Create New Group</button>
-                        </div>
-                    `;
+                            <i class="fas fa-search icon"></i>
+                            <h3>No matches found</h3>
+                            <button onclick="clearSearch()">Clear Search</button>
+                        </div>`;
+                } else {
+                    const msg = tabName === 'myGroups' ? "You haven't joined any groups yet." : "No groups available.";
+                    groupsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open icon"></i>
+                            <h3>${msg}</h3>
+                            ${tabName === 'available' ? '<button onclick="location.href=\'group-creationpage.html\'">Create Group</button>' : ''}
+                        </div>`;
                 }
-                
                 document.getElementById('loadMoreBtn').style.display = 'none';
                 return;
             }
             
-            // Create or append group elements
-            if (startIndex === 0) {
-                groupsContainer.innerHTML = '';
-            }
-            
             const fragment = document.createDocumentFragment();
             batchGroups.forEach(group => {
-                const groupElement = createGroupElement(group);
-                fragment.appendChild(groupElement);
+                fragment.appendChild(createGroupElement(group));
             });
             groupsContainer.appendChild(fragment);
             
             displayedCount += batchGroups.length;
             
-            // Update load more button
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             if (displayedCount < groupsToDisplay.length) {
                 loadMoreBtn.style.display = 'block';
-                loadMoreBtn.textContent = `Load More (${groupsToDisplay.length - displayedCount} remaining)`;
+                loadMoreBtn.textContent = `LOAD MORE`;
             } else {
                 loadMoreBtn.style.display = 'none';
-            }
-            
-            // Scroll to top if first load
-            if (startIndex === 0) {
-                groupsContainer.scrollTop = 0;
             }
         }
 
         function createGroupElement(group) {
-            const groupCard = document.createElement('div');
-            groupCard.className = 'group-card';
-            groupCard.onclick = (e) => {
-                if (e.target.closest('.join-group-btn') || e.target.closest('.leave-group-btn')) {
-                    return;
-                }
-                openGroupModal(group);
-            };
-
+            const div = document.createElement('div');
+            div.className = 'group-card';
+            
             const groupId = group.groupId || group.id;
-            const groupName = (group.projectname && String(group.projectname).trim()) 
-                ? group.projectname 
-                : 'Unnamed Group';
-            const groupDesc = (group.descriptionobjective && String(group.descriptionobjective).trim())
-                ? group.descriptionobjective
-                : 'No description provided';
-            
-            const isJoined = group.isMember || (group.members && group.members.includes(currentUser.id));
-            
-            const skills = group.requiredskills || [];
-            const timeline = group.projecttimeline;
-            
-            const formattedTimeline = timeline ? 
-                timeline
-                    .replace(/montsg/gi, 'months')
-                    .replace(/monts\b/gi, 'months') 
-                    .replace(/mont\b/gi, 'month')
-                    .replace(/weakg/gi, 'weeks')
-                    .replace(/weak\b/gi, 'week') 
-                    .replace(/daysg/gi, 'days')
-                    .replace(/\s+/g, ' ')
-                    .trim() : null;
-            
-            const groupInitials = groupName.substring(0, 2).toUpperCase();
-
-            // --- Status Badge & Progress Bar Logic ---
+            const isJoined = group.members && group.members.map(String).includes(String(currentUser.id));
             const memberCount = group.members ? group.members.length : 0;
-            const maxMembers = group.maxMembers || 0; // Use 0 if no max
+            const max = group.maxMembers || 0;
+            const initials = (group.projectname || 'U').substring(0, 2).toUpperCase();
             
-            let fillPercent = 0;
-            let spotsLeft = Infinity;
-            
-            if (maxMembers > 0) {
-                 fillPercent = Math.min((memberCount / maxMembers) * 100, 100);
-                 spotsLeft = maxMembers - memberCount;
-            } else {
-                 fillPercent = 0;
-            }
-            
-            const isFull = spotsLeft <= 0 && maxMembers > 0;
+            // Status Logic
+            let statusClass = 'badge-open';
+            let statusText = 'Open';
+            if (isJoined) { statusClass = 'badge-joined'; statusText = 'Member'; }
+            else if (max > 0 && memberCount >= max) { statusClass = 'badge-full'; statusText = 'Full'; }
+            else if (max > 0 && max - memberCount === 1) { statusClass = 'badge-filling'; statusText = '1 Spot Left'; }
 
-            let statusBadge = '';
+            // Progress Bar
+            let fillPercent = max > 0 ? Math.min((memberCount / max) * 100, 100) : 0;
+            let progressBar = max > 0 ? `
+                <div class="member-count" style="margin-top:1rem; color:var(--ink-secondary); font-size:0.85rem;">
+                    <span>${memberCount}/${max} Members</span>
+                    <div class="member-progress-bar"><div class="progress-fill" style="width: ${fillPercent}%"></div></div>
+                </div>` : `<div style="margin-top:1rem; color:var(--ink-secondary); font-size:0.85rem;">${memberCount} Members</div>`;
+
+            // Button Logic
+            let btn = '';
             if (isJoined) {
-                statusBadge = '<span class="group-status-badge badge-joined">Member</span>';
-            } else if (isFull) {
-                statusBadge = `<span class="group-status-badge badge-full">🔴 Full</span>`;
-            } else if (maxMembers > 0) {
-                if (spotsLeft === 1) {
-                  statusBadge = `<span class="group-status-badge badge-filling">🟡 1 spot left!</span>`;
-                } else {
-                  statusBadge = `<span class="group-status-badge badge-open">🟢 Open${spotsLeft > 1 ? ` - ${spotsLeft} spots left` : ''}</span>`;
-                }
+                btn = `<button class="leave-group-btn" onclick="leaveGroup('${groupId}'); event.stopPropagation();">Leave Team</button>`;
+            } else if (statusText === 'Full') {
+                btn = `<button class="join-group-btn" disabled>Full</button>`;
             } else {
-                statusBadge = `<span class="group-status-badge badge-open">🟢 Open</span>`;
-            }
-            
-            let memberCountHtml = '';
-            if (maxMembers && maxMembers > 0) {
-                memberCountHtml = `
-                <div class="member-count" title="${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} available">
-                  <span>${memberCount}/${maxMembers} Members</span>
-                  <div class="member-progress-bar">
-                    <div class="progress-fill" style="width: ${Math.floor(fillPercent)}%"></div>
-                  </div>
-                </div>
-                `;
-            } else {
-                memberCountHtml = `
-                <div class="member-count" style="margin-top: 10px; margin-bottom: 15px;">
-                  <span>${memberCount} Members</span>
-                </div>
-                `;
-            }
-            // --- End of new logic ---
-
-
-            let actionButton = '';
-            if (isJoined) {
-                actionButton = `
-                    <button class="leave-group-btn" onclick="event.stopPropagation(); leaveGroup('${groupId}')">
-                        Leave Group
-                    </button>
-                `;
-            } else if (isFull) {
-                actionButton = `
-                    <button class="join-group-btn" disabled style="background:#cbd5e0;color:#718096">
-                        Full
-                    </button>
-                `;
-            } else {
-                actionButton = `
-                    <button class="join-group-btn" onclick="event.stopPropagation(); joinGroup('${groupId}')">
-                        Join Group
-                    </button>
-                `;
+                btn = `<button class="join-group-btn" onclick="joinGroup('${groupId}'); event.stopPropagation();">Join Team</button>`;
             }
 
-            groupCard.innerHTML = `
+            div.innerHTML = `
                 <div class="group-card-header">
                     <div class="group-header-left">
-                        <div class="group-icon">${groupInitials}</div>
+                        <div class="group-icon">${initials}</div>
                         <div class="group-info">
-                            <h4>${escapeHtml(groupName)}</h4>
-                            <p>${getTimeAgo(new Date(group.createdAt || Date.now()))}</p>
+                            <h4>${escapeHtml(group.projectname)}</h4>
+                            <p style="font-size:0.8rem; color:var(--ink-tertiary)">Est. ${new Date(group.createdAt || Date.now()).toLocaleDateString()}</p>
                         </div>
                     </div>
-                    ${statusBadge}
+                    <span class="group-status-badge ${statusClass}">${statusText}</span>
                 </div>
                 
-                ${memberCountHtml}
+                ${progressBar}
 
-                <div class="group-description">
-                    <h5>Description & Objective</h5>
-                    <p>${escapeHtml(groupDesc)}</p>
+                <div class="group-description" style="margin-top:1rem;">
+                    <h5>Objective</h5>
+                    <p>${escapeHtml(group.descriptionobjective)}</p>
                     
-                    ${skills.length > 0 ? `
-                        <div style="margin-bottom: 15px">
-                            <h5 style="font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px;">
-                                Required Skills
-                            </h5>
-                            <div class="group-skills">
-                                ${skills.map(skill => `<span class="skill-tag">${escapeHtml(skill)}</span>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
+                    ${group.requiredskills?.length ? `
+                        <div class="group-skills">
+                            ${group.requiredskills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
+                        </div>` : ''}
                     
-                    ${formattedTimeline ? `
-                        <div class="group-timeline">
-                            <strong>⏱️ Timeline:</strong> ${escapeHtml(formattedTimeline)}
-                        </div>
-                    ` : ''}
+                    ${group.projecttimeline ? `<div class="group-timeline"><strong>Timeline:</strong> ${escapeHtml(group.projecttimeline)}</div>` : ''}
                 </div>
-                
+
                 <div class="group-card-footer">
-                    <div class="group-meta">
-                        ${isJoined ? 
-                            (currentTab === 'myGroups' ? 
-                                'Click to view members' : 
-                                `You are a member • ${memberCount} total`
-                            ) : 
-                            (isFull ? 'Group is full' : 'Spots available')
-                        }
-                    </div>
-                    <div>
-                        ${actionButton}
-                    </div>
+                    <div class="group-meta">${isJoined ? 'Currently a member' : 'Open for collaboration'}</div>
+                    ${btn}
                 </div>
             `;
-
-            return groupCard;
-        }
-
-
-        function loadMoreGroups() {
-            let groupsToDisplay = [];
-            if (currentTab === 'available') {
-                groupsToDisplay = allGroups.filter(g => !g.members?.includes(String(currentUser.id)) && !g.isFull);
-            } else {
-                groupsToDisplay = allGroups.filter(g => g.members?.includes(String(currentUser.id)));
-            }
             
-            if (searchQuery) {
-                 groupsToDisplay = groupsToDisplay.filter(group => {
-                    let fields = [
-                        group.projectname,
-                        group.descriptionobjective,
-                        ...(group.requiredskills || []),
-                        String(group.members?.length ?? 0),
-                        group.projecttimeline || ''
-                    ];
-                    return fields.join(' ').toLowerCase().includes(searchQuery);
-                 });
-            }
-
-            displayGroupsBatch(groupsToDisplay, currentTab);
+            div.onclick = (e) => {
+                if (!e.target.closest('button')) openGroupModal(group);
+            };
+            return div;
         }
 
         async function openGroupModal(group) {
-            const groupName = group.projectname || 'Unnamed Group';
-            const groupDesc = group.descriptionobjective || 'No description provided';
-            const skills = group.requiredskills || [];
-            const timeline = group.projecttimeline;
+            document.getElementById('modalGroupName').textContent = group.projectname;
             
-            const formattedTimeline = timeline ? 
-                timeline
-                    .replace(/monts/gi, 'months')
-                    .replace(/ weak/gi, ' week')
-                    .replace(/ days/gi, ' days')
-                    .replace(/\s+/g, ' ')
-                    .trim() : null;
-            
-            const memberIds = group.members || [];
-            
-            document.getElementById('modalGroupName').textContent = groupName;
-            
-            const detailsHtml = `
-                <div style="margin-bottom: 20px">
-                    <h4 style="font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 8px;">
-                        Description & Objective
-                    </h4>
-                    <p style="font-size: 14px; line-height: 1.6; color: var(--dark-text);">
-                        ${escapeHtml(groupDesc)}
-                    </p>
-                </div>
+            const details = document.getElementById('modalGroupDetails');
+            details.innerHTML = `
+                <h4 style="font-size:0.9rem; color:var(--ink-tertiary); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Description</h4>
+                <p style="margin-bottom:1.5rem;">${escapeHtml(group.descriptionobjective)}</p>
                 
-                ${skills.length > 0 ? `
-                    <div style="margin-bottom: 20px">
-                        <h4 style="font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 8px;">
-                            Required Skills
-                        </h4>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${skills.map(skill => `
-                                <span style="background: #e6f2ff; color: var(--accent1); padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;">
-                                    ${escapeHtml(skill)}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-                
-                ${formattedTimeline ? `
-                    <div style="padding: 12px; background: var(--light-bg); border-radius: 8px; font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-                        <strong>⏱️ Timeline:</strong> ${escapeHtml(formattedTimeline)}
-                    </div>
-                ` : ''}
+                ${group.requiredskills?.length ? `
+                <h4 style="font-size:0.9rem; color:var(--ink-tertiary); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Skills Required</h4>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1.5rem;">
+                    ${group.requiredskills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
+                </div>` : ''}
             `;
             
-            document.getElementById('modalGroupDetails').innerHTML = detailsHtml;
-            await loadAndDisplayMembers(memberIds);
             document.getElementById('groupModal').classList.add('active');
+            await loadAndDisplayMembers(group.members || []);
         }
 
-        async function loadAndDisplayMembers(memberIds) {
-            const membersList = document.getElementById('membersList');
-            membersList.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--muted)">
-                    <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
-                    Loading members...
-                </div>
-            `;
-
+        async function loadAndDisplayMembers(ids) {
+            const list = document.getElementById('membersList');
+            list.innerHTML = '<div style="text-align:center; color:var(--ink-tertiary)">Loading...</div>';
+            
             try {
-                let membersData = [];
-                
-                // Load current user first if they are a member
-                if (memberIds.includes(currentUser.id)) {
-                    membersData.push({
-                        id: currentUser.id, // Use 'id'
-                        _id: currentUser.id, // Also add '_id' for robustness
-                        fullName: currentUser.fullName,
-                        branch: currentUser.branch,
-                        university: currentUser.university,
-                        profilePhotoUrl: currentUser.profilePhotoUrl
-                    });
-                }
-                
-                // Load other members
-                for (const memberId of memberIds) {
-                    if (memberId === currentUser.id) continue;
-                    
-                    try {
-                        const response = await fetch(`${API_URL}/getuser/${memberId}`);
-                        const result = await response.json();
-                        if (result.success && result.user) {
-                            membersData.push(result.user);
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching member ${memberId}:`, error);
+                let html = '';
+                for (const id of ids) {
+                    if (id === currentUser.id) {
+                        html += createMemberRow(currentUser);
+                    } else {
+                        const res = await fetch(`${API_URL}/getuser/${id}`);
+                        const data = await res.json();
+                        if (data.success) html += createMemberRow(data.user);
                     }
                 }
-                
-                // Remove duplicates and sort
-                membersData = [...new Map(membersData.map(m => [m.id || m._id, m])).values()];
-                membersData.sort((a, b) => a.fullName.localeCompare(b.fullName));
-                
-                membersList.innerHTML = '';
-                if (membersData.length === 0) {
-                    membersList.innerHTML = `
-                        <div style="text-align:center;padding:20px;color:var(--muted)">
-                            No members found
-                        </div>
-                    `;
-                    return;
-                }
-                
-                membersData.forEach(member => {
-                    const memberCard = createMemberCard(member);
-                    membersList.appendChild(memberCard);
-                });
-                
-            } catch (error) {
-                console.error('Error loading members:', error);
-                membersList.innerHTML = `
-                    <div style="text-align:center;padding:20px;color:#ff6b6b">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Error loading members
-                    </div>
-                `;
+                list.innerHTML = html || '<div style="text-align:center; color:var(--ink-tertiary)">No members found</div>';
+            } catch (e) {
+                list.innerHTML = '<div style="text-align:center; color:var(--status-red-text)">Error loading members</div>';
             }
         }
 
-        function createMemberCard(member) {
-            const memberCard = document.createElement('div');
-            memberCard.className = 'member-card';
-            memberCard.onclick = (e) => {
-                e.stopPropagation();
-                // ---
-                // --- THIS IS THE FIX ---
-                // We check for member.id (from login/signup) OR member._id (from older/other API calls)
-                // to ensure we always have a valid ID to send to the profile page.
-                //
-                viewMemberProfile(member.id || member._id);
-                // ---
-                // ---
-            };
-
-            const memberId = String(member.id || member._id).trim();
-            const initials = member.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
-            const profilePhotoUrl = member.profilePhotoUrl;
-            
-            const avatarHtml = profilePhotoUrl ? 
-                `<img src="${profilePhotoUrl}" alt="${escapeHtml(member.fullName)}">` : 
-                `<div>${initials}</div>`;
-
-            memberCard.innerHTML = `
+        function createMemberRow(user) {
+            const initials = user.fullName.split(' ').map(n=>n[0]).join('').toUpperCase();
+            return `
+            <div class="member-card" onclick="window.location.href='profile.html?userId=${user.id || user._id}'">
                 <div class="member-avatar">
-                    ${avatarHtml}
+                    ${user.profilePhotoUrl ? `<img src="${user.profilePhotoUrl}">` : initials}
                 </div>
                 <div class="member-info">
-                    <div class="member-name">${escapeHtml(member.fullName)}</div>
-                    <div class="member-role">
-                        ${escapeHtml(member.branch)} • ${escapeHtml(member.university)}
-                    </div>
+                    <div class="member-name">${escapeHtml(user.fullName)}</div>
+                    <div class="member-role">${escapeHtml(user.branch || '')}</div>
                 </div>
-                <div style="color: var(--accent1); font-size: 18px;">
-                    <i class="fas fa-chevron-right"></i>
-                </div>
-            `;
-
-            return memberCard;
-        }
-
-        function viewMemberProfile(userId) {
-            const cleanUserId = String(userId).trim();
-            console.log('NAVIGATING TO MEMBER PROFILE');
-            console.log('User ID:', cleanUserId);
-            console.log('URL will be: profile.html?userId=' + cleanUserId);
-            window.location.href = `profile.html?userId=${encodeURIComponent(cleanUserId)}`;
+                <i class="fas fa-chevron-right" style="color:var(--ink-tertiary); font-size:0.8rem;"></i>
+            </div>`;
         }
 
         function closeGroupModal() {
             document.getElementById('groupModal').classList.remove('active');
-            document.getElementById('membersList').innerHTML = '';
         }
 
         async function joinGroup(groupId) {
-            if (!currentUser) {
-                alert('Please login first');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (confirm('Join this group?')) {
-                try {
-                    const response = await fetch(`${API_URL}/joingroup`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            user_id: currentUser.id, 
-                            group_id: groupId 
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success) {
-                        showNotification(result.message || 'Join request sent!');
-                        await loadGroups(); // Refresh groups
-
-                                        // Switch to "My Groups" tab if joined successfully
-                if (!result.message.includes('request')) {
+            if (!confirm('Join this group?')) return;
+            try {
+                const response = await fetch(`${API_URL}/joingroup`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.id, group_id: groupId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Successfully joined group!');
+                    await loadGroups();
                     setTimeout(() => switchTab('myGroups'), 500);
+                } else {
+                    alert(result.error || 'Failed to join');
                 }
-                        
-                        // Scroll to the group and highlight
-                        setTimeout(() => {
-                            const groupCards = document.querySelectorAll('.group-card');
-                            groupCards.forEach(card => {
-                                if (card.innerHTML.includes(groupId)) {
-                                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    card.style.border = '2px solid var(--accent2)';
-                                    setTimeout(() => {
-                                        card.style.border = '1px solid var(--border-color)';
-                                    }, 2000);
-                                }
-                            });
-                        }, 500);
-                    } else {
-                        showNotification(result.error || 'Failed to join group');
-                    }
-                } catch (error) {
-                    console.error('Join group error:', error);
-                    showNotification('Network error joining group');
-                }
-            }
+            } catch (e) { console.error(e); }
         }
 
         async function leaveGroup(groupId) {
-            if (!confirm('Are you sure you want to leave this group?')) return;
-
+            if (!confirm('Leave this group?')) return;
             try {
                 const response = await fetch(`${API_URL}/leavegroup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        user_id: currentUser.id, 
-                        group_id: groupId 
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.id, group_id: groupId })
                 });
-                
                 const result = await response.json();
                 if (result.success) {
-                    showNotification('Left group successfully');
-                    await loadGroups(); // Refresh groups
-
-                                    // Switch to "Available Groups" tab after leaving
-                setTimeout(() => switchTab('available'), 500);
+                    showNotification('Left group');
+                    await loadGroups();
+                    setTimeout(() => switchTab('available'), 500);
                 } else {
-                    showNotification(result.error || 'Failed to leave group');
+                    alert(result.error || 'Failed to leave');
                 }
-            } catch (error) {
-                console.error('Leave group error:', error);
-                showNotification('Network error leaving group');
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // Trending topics search
         function searchByTopic(topic) {
-            // Store the search topic
             localStorage.setItem('searchTopic', topic);
-            
-            // Navigate to Q&A page with topic filter
             window.location.href = `qa.html?topic=${encodeURIComponent(topic)}`;
-        }
-
-        function getTimeAgo(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffMins = Math.floor(diffMs / (1000 * 60));
-
-            if (diffDays > 0) return `${diffDays}d ago`;
-            if (diffHours > 0) return `${diffHours}h ago`;
-            if (diffMins > 0) return `${diffMins}m ago`;
-            return 'Just now';
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('huddleUser');
-                localStorage.removeItem('user'); // Also remove old key if it exists
                 window.location.href = 'login.html';
             }
         }
 
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--accent1);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 10000;
-                font-weight: 600;
-                transform: translateX(100%);
-                transition: all 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
+        function showNotification(msg) {
+            const n = document.createElement('div');
+            n.style.cssText = `position:fixed; top:20px; right:20px; background:var(--accent-clay); color:white; padding:12px 24px; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:2000; font-weight:600; animation:slideIn 0.3s ease forwards;`;
+            n.textContent = msg;
+            document.body.appendChild(n);
+            
+            const style = document.createElement('style');
+            style.innerHTML = `@keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }`;
+            document.head.appendChild(style);
 
-            // Slide in
-            requestAnimationFrame(() => {
-                notification.style.transform = 'translateX(0)';
-            });
-
-            // Auto remove
             setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
+                n.style.opacity = '0';
+                n.style.transform = 'translateX(100%)';
+                n.style.transition = 'all 0.3s ease';
+                setTimeout(() => n.remove(), 300);
             }, 3000);
         }
 
-        // --- FIX #2: Corrected navigation script setup ---
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#039;'}[m]));
+        }
+
+        function loadMoreGroups() { displayFilteredGroups(); }
+
+        // Navigation Setup
         function setupNavigation() {
             const pageRoutes = {
                 'mainpage': 'mainpage.html',
@@ -2180,39 +948,20 @@
                 'notifications': 'notifications.html',
                 'chat': 'chatpage.html'
             };
-            
-            // This was already correct, but good to confirm
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const page = this.getAttribute('data-page');
-                    if (pageRoutes[page]) {
-                        window.location.href = pageRoutes[page];
-                    }
+                    if (pageRoutes[page]) window.location.href = pageRoutes[page];
                 });
             });
-            
-            // This selector was invalid, now fixed
-            document.querySelectorAll('[onclick="logout()"], .logout-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    logout();
-                });
-            });
-            
             document.querySelectorAll('a[href], .logo, .brand').forEach(link => {
-                if (link.textContent.toLowerCase().includes('huddle')) {
-                    if (!link.classList.contains('logo')) {
-                        link.style.cursor = 'pointer';
-                        link.addEventListener('click', () => window.location.href = 'mainpage.html');
-                    }
+                if (link.textContent.toLowerCase().includes('huddle') && !link.classList.contains('logo')) {
+                    link.style.cursor = 'pointer';
+                    link.addEventListener('click', () => window.location.href = 'mainpage.html');
                 }
             });
         }
     </script>
 </body>
-
 </html>
-
-
-
