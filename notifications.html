@@ -5,268 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - The Huddle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
         :root {
-            --light-bg: #f0f2f5;
-            --dark-text: #2c3e50;
-            --dark-bg: #222f3e;
-            --card-bg: #ffffff;
-            --accent1: #005c97;
-            --accent2: #00c9a7;
-            --border-color: #e5e7eb;
-            --muted: #8899a6;
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      
+            --paper-card: #242321;    
+            --paper-inset: #151413;   
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   
+            --ink-secondary: #a8a49e; 
+            --ink-tertiary: #6b6863;  
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Status --- */
+            --status-success: #81b29a;
+            --status-error: #ef4444;
+            --status-unread-bg: rgba(224, 122, 95, 0.05);
+            --status-unread-border: #e07a5f;
+            
+            /* --- Dimensionality --- */
+            --shadow-card: 1px 1px 0px rgba(255, 255, 255, 0.05) inset, 0 4px 20px rgba(0,0,0,0.4);
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: Inter, sans-serif;
-            background: var(--light-bg);
-            color: var(--dark-text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
             min-height: 100vh;
-            padding: 20px;
+            padding: 2rem 1rem;
         }
 
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .back-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .back-btn:hover {
-            background: var(--accent1);
-            color: white;
-            border-color: var(--accent1);
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--dark-text);
-        }
-
-        .notification-list {
+        .container {
             max-width: 700px;
             margin: 0 auto;
         }
 
+        /* --- Header --- */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--paper-card);
+            border: 1px solid var(--ink-tertiary);
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--ink-secondary);
+        }
+
+        .back-btn:hover {
+            background: var(--paper-inset);
+            color: var(--ink-primary);
+            border-color: var(--accent-clay);
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink-primary);
+            letter-spacing: 0.02em;
+        }
+
+        /* --- Notification List --- */
+        .notification-list {
+            display: flex; flex-direction: column; gap: 1rem;
+            padding-bottom: 100px; /* Space for FAB */
+        }
+
+        /* --- Notification Card (Thick Stationery) --- */
         .notification-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s;
+            background: var(--paper-card);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: var(--border-card);
+            box-shadow: var(--shadow-card);
+            transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         .notification-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            border-color: rgba(255,255,255,0.1);
         }
 
         .notification-card.unread {
-            border-left: 4px solid var(--accent2);
-            background: #f8fdff;
+            background: linear-gradient(90deg, var(--status-unread-bg), var(--paper-card));
+            border-left: 3px solid var(--status-unread-border);
         }
+        
+        .notification-card:not(.unread) { opacity: 0.8; }
+        .notification-card:not(.unread):hover { opacity: 1; }
 
         .notification-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
+            display: flex; align-items: center; margin-bottom: 1rem;
         }
 
         .notification-avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px; height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent1), var(--accent2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            margin-right: 12px;
-            flex-shrink: 0;
+            background: var(--paper-inset);
+            border: 1px solid var(--ink-tertiary);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent-clay);
+            font-weight: 700; font-size: 0.9rem;
+            margin-right: 1rem; flex-shrink: 0;
+            font-family: 'Playfair Display', serif;
         }
 
-        .notification-info {
-            flex: 1;
-        }
+        .notification-info { flex: 1; }
 
         .notification-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .notification-time {
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        .notification-content {
-            line-height: 1.5;
-            margin-bottom: 12px;
-        }
-
-        .notification-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent1);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #004a77;
-        }
-
-        .btn-secondary {
-            background: var(--light-bg);
-            color: var(--dark-text);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: #e6e9ec;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--muted);
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: var(--accent1);
-        }
-
-        .mark-all-read {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            background: var(--accent2);
-            color: var(--dark-text);
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,201,167,0.3);
-            transition: all 0.3s;
-            z-index: 100;
-            display: none;
-        }
-
-        .mark-all-read:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,201,167,0.4);
+            font-weight: 600; margin-bottom: 4px; font-size: 1rem; color: var(--ink-primary);
         }
 
         .notification-type {
-            display: inline-block;
-            padding: 4px 8px;
-            background: var(--light-bg);
-            border-radius: 12px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-left: 8px;
+            display: inline-block; padding: 2px 8px;
+            background: var(--paper-inset); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 4px; font-size: 0.7rem; color: var(--ink-secondary);
+            margin-left: 8px; text-transform: uppercase; letter-spacing: 0.05em;
         }
 
+        .notification-time {
+            font-size: 0.8rem; color: var(--ink-tertiary); font-family: 'Inter', sans-serif;
+        }
+
+        .notification-content {
+            line-height: 1.6; margin-bottom: 1.5rem; color: var(--ink-secondary); font-size: 0.95rem; padding-left: 58px; /* Align with text */
+        }
+
+        .notification-actions {
+            display: flex; gap: 12px; padding-left: 58px;
+        }
+
+        /* --- Buttons (Matte) --- */
+        .btn {
+            padding: 8px 16px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.2s; border: none; font-family: 'Inter';
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: var(--accent-clay); color: white;
+            box-shadow: 0 2px 0 var(--accent-clay-dark); transform: translateY(0);
+        }
+        .btn-primary:hover { background: #eb8b70; transform: translateY(-1px); box-shadow: 0 3px 0 var(--accent-clay-dark); }
+        
+        .btn-secondary {
+            background: transparent; color: var(--ink-secondary); border: 1px solid var(--ink-tertiary);
+        }
+        .btn-secondary:hover { border-color: var(--ink-primary); color: var(--ink-primary); }
+        
+        .btn-success {
+            background: rgba(129, 178, 154, 0.1); color: var(--status-success); border: 1px solid var(--status-success);
+        }
+        .btn-success:hover { background: var(--status-success); color: var(--paper-bg); }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1); color: var(--status-error); border: 1px solid var(--status-error);
+        }
+        .btn-danger:hover { background: var(--status-error); color: white; }
+
+        /* --- Mark All Read FAB --- */
+        .mark-all-read {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 24px; background: var(--paper-card); color: var(--ink-primary);
+            border: 1px solid var(--ink-tertiary); border-radius: 50px;
+            font-weight: 600; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s; z-index: 100; display: none; font-family: 'Inter'; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem;
+        }
+        .mark-all-read:hover { border-color: var(--accent-clay); color: var(--accent-clay); transform: translateY(-2px); }
+
+        /* --- States --- */
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--ink-tertiary); }
+        .empty-state i { font-size: 3rem; margin-bottom: 20px; color: var(--paper-inset); text-shadow: 1px 1px 0 rgba(255,255,255,0.05); }
+        
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .notification-card {
-                margin-bottom: 12px;
-                padding: 16px;
-            }
-            
-            .notification-actions {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .btn {
-                width: 100%;
-                text-align: center;
-            }
-            
-            .mark-all-read {
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                width: calc(100% - 20px);
-            }
+            body { padding: 1rem; }
+            .notification-content, .notification-actions { padding-left: 0; }
+            .notification-actions { flex-wrap: wrap; }
+            .mark-all-read { width: 90%; bottom: 20px; right: 5%; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <button class="back-btn" id="backBtn">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <h1 class="page-title">Notifications</h1>
-    </div>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" id="backBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="page-title">Notifications</h1>
+        </div>
 
-    <div class="notification-list" id="notificationList">
-        <div style="text-align:center;padding:40px;color:#8899a6">
-            Loading notifications...
+        <div class="notification-list" id="notificationList">
+            <div style="text-align:center;padding:40px;color:var(--ink-tertiary)">
+                <i class="fas fa-circle-notch fa-spin"></i> Loading...
+            </div>
         </div>
     </div>
 
     <button class="mark-all-read" id="markAllReadBtn" onclick="markAllAsRead()">
-        Mark All as Read
+        Mark All Read
     </button>
 
     <script>
-        // --- FIX 1: Define API_URL correctly ---
         const API_URL = window.location.origin;
-        
         let currentUser = null;
         let allNotifications = [];
 
-        // Initialize on page load
         window.addEventListener('DOMContentLoaded', () => {
             const userStr = localStorage.getItem('huddleUser');
             if (!userStr || !JSON.parse(userStr).id) {
-                alert('Please login first!');
                 window.location.href = 'login.html';
                 return;
             }
@@ -274,57 +244,36 @@
             currentUser = JSON.parse(userStr);
             loadNotifications();
             
-            // Back button handler
             document.getElementById('backBtn').addEventListener('click', () => {
                 window.location.href = 'mainpage.html';
             });
-
-            // Start setup for other navigation buttons
+            
             setupNavigation();
         });
 
-        /**
-         * --- FIX 2: Simplified notification loading ---
-         * This now *only* calls your /getnotifications endpoint,
-         * which is the correct single source of truth.
-         */
         async function loadNotifications() {
             const container = document.getElementById('notificationList');
-            container.innerHTML = `
-                <div style="text-align:center;padding:40px;color:#8899a6">
-                    <i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:10px;"></i>
-                    Loading notifications...
-                </div>
-            `;
             
             try {
                 const response = await fetch(`${API_URL}/getnotifications?userId=${currentUser.id}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
                 
                 const data = await response.json();
                 
                 if (data.success && data.notifications) {
                     allNotifications = data.notifications;
-                    console.log(`✅ Loaded ${allNotifications.length} backend notifications`);
                     renderNotifications(allNotifications);
                 } else {
                     throw new Error(data.error || 'Failed to parse notifications');
                 }
-                
             } catch (error) {
                 console.error('Error loading notifications:', error);
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-circle"></i>
-                        <h3>Error loading notifications</h3>
+                        <h3>Unable to load</h3>
                         <p>${escapeHtml(error.message)}</p>
-                        <button onclick="loadNotifications()" 
-                                style="margin-top:15px;padding:12px 24px;background:var(--accent1);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">
-                            Retry
-                        </button>
+                        <button onclick="loadNotifications()" class="btn btn-secondary" style="margin-top:1rem">Retry</button>
                     </div>
                 `;
             }
@@ -332,7 +281,6 @@
 
         function renderNotifications(notifications) {
             const container = document.getElementById('notificationList');
-            
             const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
             
             notifications.forEach(notification => {
@@ -344,11 +292,8 @@
                     <div class="empty-state">
                         <i class="fas fa-bell-slash"></i>
                         <h3>No notifications</h3>
-                        <p>You're all caught up! Check back later for updates.</p>
-                        <button onclick="window.location.href='mainpage.html'" 
-                                style="margin-top:15px;padding:12px 24px;background:var(--accent1);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">
-                            Go to Home
-                        </button>
+                        <p>You're all caught up.</p>
+                        <button class="btn btn-primary" onclick="window.location.href='mainpage.html'" style="margin-top:1rem">Go Home</button>
                     </div>
                 `;
                 return;
@@ -360,9 +305,9 @@
                 const isUnread = notif.unread;
                 const typeBadge = notif.type === 'group' ? '<span class="notification-type">Group</span>' : 
                                   notif.type === 'activity' ? '<span class="notification-type">Activity</span>' : 
+                                  notif.type === 'join_request' ? '<span class="notification-type" style="color:var(--accent-clay)">Request</span>' :
                                   '<span class="notification-type">Update</span>';
 
-                // --- FIX 3: Use getTimeAgo for consistent time formatting ---
                 const timeAgo = getTimeAgo(new Date(notif.createdAt));
 
                 return `
@@ -380,17 +325,19 @@
                             ${escapeHtml(notif.content)}
                         </div>
                         <div class="notification-actions">
-                            <button class="btn btn-primary" onclick="viewNotification('${notif.id}', '${notif.actionUrl || ''}')">
-                                ${notif.actionUrl ? 'View' : 'Dismiss'}
-                            </button>
-                    ${notif.type === 'join_request' ? `
-                        <button class="btn btn-success" onclick="acceptJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
-                            Accept
-                        </button>
-                        <button class="btn btn-danger" onclick="rejectJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
-                            Reject
-                        </button>
-                    ` : ''}
+                            ${notif.type === 'join_request' ? `
+                                <button class="btn btn-success" onclick="acceptJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
+                                    Accept
+                                </button>
+                                <button class="btn btn-danger" onclick="rejectJoinRequest('${notif.groupId}','${notif.fromUserId}','${notif.id}')">
+                                    Reject
+                                </button>
+                            ` : `
+                                <button class="btn btn-primary" onclick="viewNotification('${notif.id}', '${notif.actionUrl || ''}')">
+                                    ${notif.actionUrl ? 'View' : 'Dismiss'}
+                                </button>
+                            `}
+                            
                             ${isUnread ? `
                                 <button class="btn btn-secondary mark-read" data-id="${notif.id}">
                                     Mark Read
@@ -405,11 +352,12 @@
             const markAllBtn = document.getElementById('markAllReadBtn');
             if (unreadCount > 0) {
                 markAllBtn.style.display = 'block';
-                markAllBtn.textContent = `Mark All as Read (${unreadCount})`;
+                markAllBtn.textContent = `Mark All Read (${unreadCount})`;
             } else {
                 markAllBtn.style.display = 'none';
             }
 
+            // Re-attach event listeners for dynamic elements
             document.querySelectorAll('.mark-read').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -417,32 +365,14 @@
                     markAsRead(notificationId, e);
                 });
             });
-
-            document.querySelectorAll('.notification-card').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    if (!e.target.closest('.btn')) {
-                        const notificationId = this.getAttribute('data-id');
-                        const actionUrl = allNotifications.find(n => n.id === notificationId)?.actionUrl;
-                        if (actionUrl) {
-                            viewNotification(notificationId, actionUrl);
-                        }
-                    }
-                });
-            });
         }
 
         function viewNotification(notificationId, actionUrl) {
             markAsRead(notificationId);
-            
             if (actionUrl) {
-                if (actionUrl.includes('mainpage.html')) {
-                    const groupId = actionUrl.split('#group-')[1];
-                    if (groupId) {
-                        localStorage.setItem('selectedGroupId', groupId);
-                        window.location.href = 'mainpage.html';
-                    } else {
-                        window.location.href = actionUrl;
-                    }
+                if (actionUrl.includes('mainpage.html') && actionUrl.includes('#group-')) {
+                    localStorage.setItem('selectedGroupId', actionUrl.split('#group-')[1]);
+                    window.location.href = 'mainpage.html';
                 } else {
                     window.location.href = actionUrl;
                 }
@@ -451,96 +381,80 @@
 
         function markAsRead(notificationId, event) {
             if (event) event.stopPropagation();
-            
             const notification = allNotifications.find(n => n.id === notificationId);
             if (notification && notification.unread) {
                 notification.unread = false;
-                
                 const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
                 readStatus[notificationId] = true;
                 localStorage.setItem(`notifications-read-${currentUser.id}`, JSON.stringify(readStatus));
-                
                 renderNotifications(allNotifications);
-                showNotification('Marked as read');
             }
         }
 
         function markAllAsRead() {
-            const unreadNotifications = allNotifications.filter(n => n.unread);
-            if (unreadNotifications.length === 0) return;
-            
             const readStatus = JSON.parse(localStorage.getItem(`notifications-read-${currentUser.id}`) || '{}');
             allNotifications.forEach(notification => {
                 readStatus[notification.id] = true;
                 notification.unread = false;
             });
             localStorage.setItem(`notifications-read-${currentUser.id}`, JSON.stringify(readStatus));
-            
             renderNotifications(allNotifications);
-            showNotification(`Marked ${unreadNotifications.length} notifications as read`);
+        }
+
+        // --- Join Logic Integration ---
+        async function acceptJoinRequest(groupId, userId, notificationId) {
+            try {
+                const response = await fetch(`${API_URL}/acceptjoinrequest`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ groupId, userId, leaderId: currentUser.id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert("User accepted!");
+                    // Mark notification as read/handled
+                    markAsRead(notificationId);
+                    loadNotifications(); 
+                } else {
+                    alert(data.error || "Error");
+                }
+            } catch (err) { alert("Network error"); }
+        }
+
+        async function rejectJoinRequest(groupId, userId, notificationId) {
+            try {
+                const response = await fetch(`${API_URL}/rejectjoinrequest`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ groupId, userId, leaderId: currentUser.id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert("Request rejected");
+                    markAsRead(notificationId);
+                    loadNotifications();
+                } else {
+                    alert(data.error || "Error");
+                }
+            } catch (err) { alert("Network error"); }
         }
 
         function getTimeAgo(date) {
             const now = new Date();
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
             if (diffMins < 1) return 'Just now';
             if (diffMins < 60) return `${diffMins}m ago`;
-            if (diffHours < 24) return `${diffHours}h ago`;
-            if (diffDays < 7) return `${diffDays}d ago`;
-            
+            if (diffMins < 1440) return `${Math.floor(diffMins/60)}h ago`;
             return date.toLocaleDateString();
         }
 
         function escapeHtml(text) {
             if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--accent1);
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 10000;
-                font-weight: 600;
-                transform: translateX(100%);
-                transition: all 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            requestAnimationFrame(() => {
-                notification.style.transform = 'translateX(0)';
-            });
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        /**
-         * --- FIX 4: Corrected navigation script ---
-         * This runs once and sets up listeners for any nav
-         * buttons that might be on the page.
-         */
         function setupNavigation() {
             const pageRoutes = {
                 'mainpage': 'mainpage.html',
@@ -556,80 +470,10 @@
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const page = this.getAttribute('data-page');
-                    if (pageRoutes[page]) {
-                        window.location.href = pageRoutes[page];
-                    }
+                    if (pageRoutes[page]) window.location.href = pageRoutes[page];
                 });
             });
-            
-            document.querySelectorAll('.logout-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.clear();
-                    window.location.href = 'login.html';
-                });
-            });
-            
-            document.querySelectorAll('a[href], .logo, .brand').forEach(link => {
-                if (link.textContent.toLowerCase().includes('huddle')) {
-                    if (!link.classList.contains('logo')) {
-                        link.style.cursor = 'pointer';
-                        link.addEventListener('click', () => window.location.href = 'mainpage.html');
-                    }
-                }
-            });
         }
-
-    // Accept join request
-    async function acceptJoinRequest(groupId, userId, notificationId) {
-        try {
-            const response = await fetch(`${API_URL}/acceptjoinrequest`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    groupId: groupId,
-                    userId: userId,
-                    leaderId: currentUser.id
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert("User accepted!");
-                loadNotifications();
-            } else {
-                alert(data.error || "Error");
-            }
-        } catch (err) {
-            alert("Network error");
-        }
-    }
-
-    // Reject join request
-    async function rejectJoinRequest(groupId, userId, notificationId) {
-        try {
-            const response = await fetch(`${API_URL}/rejectjoinrequest`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    groupId: groupId,
-                    userId: userId,
-                    leaderId: currentUser.id
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert("Request rejected");
-                loadNotifications();
-            } else {
-                alert(data.error || "Error");
-            }
-        } catch (err) {
-            alert("Network error");
-        }
-    }
     </script>
 </body>
-
 </html>
