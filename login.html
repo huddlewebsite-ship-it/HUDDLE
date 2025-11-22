@@ -5,31 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Huddle — Log In</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
-        /* --- Light Theme Color Palette --- */
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
         :root {
-            --light-bg: #f0f2f5;
-            --dark-text: #2c3e50;
-            --card-bg: #ffffff;
-            --accent1: #005c97;
-            --accent2: #00c9a7;
-            --shadow-color: rgba(0, 92, 151, 0.1);
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      /* Deep Warm Charcoal */
+            --paper-card: #242321;    /* Lighter Charcoal Cardstock */
+            --paper-inset: #151413;   /* Deep inset for inputs */
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   /* Cream / Off-White */
+            --ink-secondary: #a8a49e; /* Warm Grey */
+            --ink-tertiary: #6b6863;  /* Deep Grey */
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Dimensionality --- */
+            --shadow-card: 
+                1px 1px 0px rgba(255, 255, 255, 0.05) inset, 
+                0 10px 40px rgba(0,0,0,0.5);
+                
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        body { 
-            background: var(--light-bg); 
-            overflow: hidden; 
-            position: relative; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            color: var(--dark-text); 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
-        /* --- Consistent Particle Background --- */
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.01em;
+            font-weight: 700;
+        }
+
+        /* --- Background Canvas --- */
         #hero-canvas {
             position: fixed;
             top: 0;
@@ -37,103 +64,156 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            opacity: 0.4; /* Subtle ambient movement */
         }
 
-        .login-panel { 
-            width: 90%; 
-            max-width: 400px; 
-            background: var(--card-bg);
-            border-radius: 20px; 
-            padding: 40px; 
-            box-shadow: 0 15px 40px var(--shadow-color);
-            border: 1px solid #e0e0e0;
-            position: relative; 
-            z-index: 10; 
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        /* --- Login Panel (Premium Cardstock) --- */
+        .login-panel {
+            width: 90%;
+            max-width: 420px;
+            background: var(--paper-card);
+            border-radius: 12px; /* Softer corners */
+            padding: 3rem;
+            box-shadow: var(--shadow-card);
+            border: var(--border-card);
+            position: relative;
+            z-index: 10;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .login-panel:hover { 
-            transform: translateY(-4px); 
+
+        .login-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--ink-primary);
+            letter-spacing: 0.02em;
         }
         
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { 
-            font-size: 1.8rem; 
-            font-weight: 700; 
-            letter-spacing: 0.5px; 
-            background: linear-gradient(to right, var(--accent1), var(--accent2)); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 1.5rem; position: relative; }
+        
+        .form-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-tertiary);
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: var(--paper-inset);
+            border: 1px solid transparent; /* Clean look */
+            border-radius: 8px;
+            color: var(--ink-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8), inset -1px -1px 0 rgba(255,255,255,0.1);
+            border-color: var(--accent-clay);
         }
         
-        .form-group { margin-bottom: 22px; position: relative; }
-        .form-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; transition: color 0.3s ease; }
-        .form-group input { 
-            width: 100%; 
-            padding: 14px 15px 14px 45px; 
-            background: #f7f7f9; 
-            border: 1px solid #ddd; 
-            border-radius: 12px; 
-            color: var(--dark-text); 
-            font-size: 16px; 
-            outline: none; 
-            transition: all 0.3s ease; 
+        .form-group input::placeholder { color: var(--ink-tertiary); }
+        .form-group input:focus + i { color: var(--accent-clay); }
+
+        .forgot-password { text-align: right; margin-bottom: 2rem; margin-top: -0.5rem; }
+        .forgot-password a {
+            color: var(--ink-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.2s;
         }
-        .form-group input:focus { 
-            border-color: var(--accent1); 
-            background: white; 
-            box-shadow: 0 0 0 3px rgba(0, 92, 151, 0.2); 
+        .forgot-password a:hover { color: var(--accent-clay); }
+
+        /* --- Button (Matte Terracotta) --- */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-clay);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s;
+            /* "Thick" button look */
+            box-shadow: 0 4px 0 var(--accent-clay-dark);
+            transform: translateY(0);
         }
-        .form-group input::placeholder { color: #aaa; }
-        .form-group input:focus + i { color: var(--accent1); }
-        
-        .forgot-password { text-align: right; margin-bottom: 24px; }
-        .forgot-password a { color: var(--accent1); text-decoration: none; font-size: 0.87rem; transition: color 0.3s ease; }
-        .forgot-password a:hover { color: var(--accent2); text-decoration: underline; }
-        
-        .submit-btn { 
-            width: 100%; 
-            padding: 14px; 
-            background: linear-gradient(to right, var(--accent1), var(--accent2)); 
-            border: none; 
-            border-radius: 12px; 
-            color: white; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            box-shadow: 0 4px 15px rgba(0, 148, 167, 0.3); 
-            letter-spacing: 0.4px; 
+
+        .submit-btn:hover {
+            background-color: #eb8b70;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
         }
-        .submit-btn:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 148, 167, 0.45); 
+
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--accent-clay-dark);
         }
+
         .submit-btn:disabled {
-            background: #ccc;
+            background-color: var(--paper-inset);
+            color: var(--ink-tertiary);
             box-shadow: none;
             cursor: not-allowed;
+            transform: none;
         }
 
-        .signup-link { text-align: center; margin-top: 25px; color: #556778; font-size: 0.87rem; }
-        .signup-link a { color: var(--accent1); text-decoration: none; font-weight: 600; transition: color 0.3s ease; }
-        .signup-link a:hover { color: var(--accent2); text-decoration: underline; }
+        /* --- Links --- */
+        .signup-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--ink-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .signup-link a {
+            color: var(--ink-primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid var(--accent-clay);
+            padding-bottom: 2px;
+            transition: color 0.2s;
+        }
+        
+        .signup-link a:hover { color: var(--accent-clay); }
     </style>
 </head>
 <body>
     <div id="hero-canvas"></div>
 
     <div class="login-panel">
-        <div class="header"><h1>Log in to Huddle</h1></div>
+        <div class="header"><h1>Welcome Back</h1></div>
         
         <form id="loginForm">
             <div class="form-group">
-                <i class="fas fa-envelope"></i>
                 <input type="email" name="email" id="email" placeholder="Email address" required>
+                <i class="fas fa-envelope"></i>
             </div>
             
             <div class="form-group">
-                <i class="fas fa-lock"></i>
                 <input type="password" name="password" id="password" placeholder="Password" required>
+                <i class="fas fa-lock"></i>
             </div>
             
             <div class="forgot-password"><a href="#">Forgot password?</a></div>
@@ -142,7 +222,7 @@
         </form>
         
         <div class="signup-link">
-            Don't have an account? <a href="sign-up.html">Sign up</a>
+            New here? <a href="sign-up.html">Create an account</a>
         </div>
     </div>
     
@@ -152,9 +232,10 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // --- Background Particle Animation ---
-        const accent1Color = 0x005c97;
+        // --- Background Particle Animation (Subtle & Warm) ---
+        const accentColor = 0xe07a5f; // Matte Terracotta
         const container = document.getElementById('hero-canvas');
+        
         if (container) {
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -164,18 +245,26 @@
             container.appendChild(renderer.domElement);
             camera.position.z = 5;
             
-            const particleCount = 5000;
+            const particleCount = 4000;
             const positions = new Float32Array(particleCount * 3);
             for (let i = 0; i < particleCount; i++) {
                 positions[i * 3] = (Math.random() - 0.5) * 20;
                 positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
                 positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
             }
+            
             const particlesGeometry = new THREE.BufferGeometry();
             particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
             const particleMaterial = new THREE.PointsMaterial({
-                color: accent1Color, size: 0.02, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
+                color: accentColor, 
+                size: 0.02, 
+                blending: THREE.AdditiveBlending, 
+                transparent: true, 
+                opacity: 0.4, // Softer opacity for background
+                depthWrite: false
             });
+            
             const particles = new THREE.Points(particlesGeometry, particleMaterial);
             scene.add(particles);
 
@@ -187,10 +276,10 @@
 
             function animate() {
                 requestAnimationFrame(animate);
-                const time = Date.now() * 0.0001;
+                const time = Date.now() * 0.00005; // Slower, calmer movement
                 particles.rotation.y = time * 0.5;
-                camera.position.x += (mouse.x * 2 - camera.position.x) * 0.02;
-                camera.position.y += (-mouse.y * 2 - camera.position.y) * 0.02;
+                camera.position.x += (mouse.x * 1 - camera.position.x) * 0.02;
+                camera.position.y += (-mouse.y * 1 - camera.position.y) * 0.02;
                 camera.lookAt(scene.position);
                 renderer.render(scene, camera);
             };
@@ -203,7 +292,7 @@
             });
         }
 
-        // --- ✅ DATABASE-CONNECTED LOGIN FORM ---
+        // --- Login Logic Preserved ---
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', async function(e) {
@@ -219,10 +308,10 @@
                 }
                 
                 loginBtn.disabled = true;
-                loginBtn.textContent = 'Logging In...';
+                loginBtn.textContent = 'Verifying...';
 
                 try {
-                    // ✅ CONNECTING TO MONGODB ATLAS via Flask Backend
+                    // Using relative path as requested in previous prompt context
                     const response = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -232,62 +321,29 @@
                     const result = await response.json();
 
                     if (response.ok && result.success) { 
-                        // ✅ Store user data from MongoDB
                         localStorage.setItem('huddleUser', JSON.stringify(result.user));
                         
-                        // Handle team data if exists
                         if (result.currentTeam) {
                             localStorage.setItem('currentTeam', JSON.stringify(result.currentTeam));
                         } else {
                             localStorage.removeItem('currentTeam'); 
                         }
                         
-                        alert(`✅ Welcome ${result.user.fullName}!`);
-                        window.location.href = 'mainpage.html'; // Change to mainpage.html or qa.html
+                        // alert(`✅ Welcome ${result.user.fullName}!`); // Optional alert removed for cleaner UX
+                        window.location.href = 'mainpage.html';
                     } else { 
-                        alert(`❌ Login Failed: ${result.error}`);
+                        alert(`Login Failed: ${result.error}`);
                     }
 
                 } catch (error) {
                     console.error('Login error:', error);
-                    alert('❌ Network Error: Make sure Flask server is running at /');
+                    alert('Connection Error: Ensure server is running.');
                 } finally {
                     loginBtn.disabled = false;
                     loginBtn.textContent = 'Log In';
                 }
             });
         }
-    
-    // FIX: Connect login form to API
-    (function() {
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const emailInput = document.querySelector('input[type="email"]');
-                const passwordInput = document.querySelector('input[type="password"]');
-                const email = emailInput.value.trim();
-                const password = passwordInput.value;
-
-                try {
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({email, password})
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        localStorage.setItem('user', JSON.stringify(data.user));
-                        window.location.href = '/mainpage.html';
-                    } else {
-                        alert(data.error || 'Login failed');
-                    }
-                } catch(err) {
-                    alert('Error: ' + err.message);
-                }
-            });
-        }
-    })();
     </script>
 </body>
 </html>
