@@ -4,110 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Account — The Huddle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- NEW: Font import to match The Huddle landing page --- */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
-        /* --- NEW: The Huddle Theme Color Palette --- */
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
         :root {
-            --light-bg: #f0f2f5;
-            --dark-text: #2c3e50;
-            --card-bg: #ffffff;
-            --accent1: #005c97; /* Primary Blue */
-            --accent2: #00c9a7; /* Vibrant Teal */
-            --accent1-glow: rgba(0, 92, 151, 0.2);
-            --shadow-color: rgba(0, 92, 151, 0.1);
-            --border-color: #d1d9e2;
-            --placeholder-color: #8a99a8;
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      /* Deep Warm Charcoal */
+            --paper-card: #242321;    /* Lighter Charcoal Cardstock */
+            --paper-inset: #151413;   /* Deep inset for inputs */
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   /* Cream / Off-White */
+            --ink-secondary: #a8a49e; /* Warm Grey */
+            --ink-tertiary: #6b6863;  /* Deep Grey */
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Dimensionality --- */
+            --shadow-card: 
+                1px 1px 0px rgba(255, 255, 255, 0.05) inset, 
+                0 10px 40px rgba(0,0,0,0.5);
+            
+            /* --- Status --- */
+            --status-error: #ef4444;
+            --status-success: #10b981;
+            
+            /* --- Border --- */
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--light-bg);
-            color: var(--dark-text);
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 2rem 1rem;
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
         
+        #hero-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* --- Main Container (Premium Cardstock) --- */
         .container {
             width: 100%;
             max-width: 800px;
-            background-color: var(--card-bg);
+            background-color: var(--paper-card);
             border-radius: 12px;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            border: 1px solid #e1e8f0;
+            border: var(--border-card);
+            box-shadow: var(--shadow-card);
             overflow: hidden;
             z-index: 10;
             margin: 2rem 0;
+            /* Entry Animation */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease-out forwards;
         }
         
-        .header-bar {
-            background: linear-gradient(90deg, var(--accent1), var(--accent2));
-            height: 8px;
-        }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
         
-        .registration-form {
-            padding: 2.5rem;
-        }
+        .registration-form { padding: 3rem; }
         
         .form-title {
             text-align: center;
-            font-size: 2rem;
-            font-weight: 800;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
-            /* NEW: Applying the signature gradient */
-            background: linear-gradient(90deg, var(--accent1), var(--accent2));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--ink-primary);
+            letter-spacing: 0.02em;
         }
         
         .tagline {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 400;
-            color: #556778;
+            color: var(--ink-secondary);
             text-align: center;
-            margin-bottom: 2.5rem;
-            min-height: 1.5rem;
+            margin-bottom: 3rem;
+            font-family: 'Inter', sans-serif;
         }
         
         #dynamic-text {
-            color: var(--accent2);
+            color: var(--accent-clay);
             font-weight: 600;
+            font-family: 'Playfair Display', serif; 
+            font-style: italic;
         }
         
         .cursor {
             display: inline-block;
-            color: var(--accent2);
+            color: var(--accent-clay);
             font-weight: 600;
             animation: blink 1s step-end infinite;
         }
+        @keyframes blink { 50% { opacity: 0; } }
         
-        @keyframes blink {
-            from, to { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        
-        .form-section {
-            margin-bottom: 2rem;
-        }
+        /* --- Sections --- */
+        .form-section { margin-bottom: 2.5rem; }
         
         .form-section h2 {
+            font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--dark-text);
+            font-weight: 600;
+            color: var(--ink-primary);
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid #e1e8f0;
-            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.5rem;
+            letter-spacing: 0.02em;
         }
         
         .form-grid {
@@ -116,178 +138,193 @@
             gap: 1.5rem;
         }
         
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
         
         .form-group label {
-            font-size: 0.875rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 500;
             margin-bottom: 0.5rem;
-            color: var(--dark-text);
+            color: var(--ink-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
-        .form-group label .optional {
-            color: var(--placeholder-color);
-            font-weight: 400;
-        }
+        .form-group label .optional { color: var(--ink-tertiary); font-weight: 400; text-transform: none; }
+        .form-group label .asterisk { color: var(--accent-clay); }
         
-        .form-group label .asterisk {
-            color: var(--accent1);
-            font-weight: 600;
-        }
-        
+        /* --- Inputs (Debossed Effect) --- */
         .form-group input, .form-group select {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border: 1px solid transparent; /* Clean border */
             border-radius: 6px;
-            background-color: #f7f9fa;
+            background-color: var(--paper-inset);
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            color: var(--dark-text);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            color: var(--ink-primary);
+            /* Inner shadow for depth */
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            outline: none;
         }
         
         .form-group select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238a99a8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
+            /* Custom dropdown arrow for dark mode */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8a49e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
             -webkit-appearance: none;
-            -moz-appearance: none;
             appearance: none;
+            cursor: pointer;
         }
         
-        .form-group input::placeholder {
-            color: var(--placeholder-color);
-        }
+        .form-group input::placeholder { color: var(--ink-tertiary); }
         
         .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--accent1);
-            box-shadow: 0 0 0 3px var(--accent1-glow);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8), inset -1px -1px 0 rgba(255,255,255,0.1);
+            border-color: var(--accent-clay);
         }
         
         .form-group small {
-            font-size: 0.8rem;
-            color: #556778;
+            font-size: 0.75rem;
+            color: var(--ink-tertiary);
             margin-top: 0.5rem;
+            font-style: italic;
         }
         
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
+        /* --- Password Visibility --- */
+        .password-wrapper { position: relative; width: 100%; }
         
         .password-wrapper .toggle-password {
             position: absolute;
             top: 50%;
-            right: 15px;
+            right: 12px;
             transform: translateY(-50%);
             cursor: pointer;
-            color: var(--placeholder-color);
+            color: var(--ink-tertiary);
             transition: color 0.2s;
+            display: flex;
+            align-items: center;
         }
         
-        .password-wrapper .toggle-password:hover {
-            color: var(--accent1);
+        .password-wrapper .toggle-password:hover { color: var(--ink-primary); }
+        .password-wrapper .toggle-password svg { width: 18px; height: 18px; }
+        
+        #passwordStrength {
+            margin-top: 0.5rem;
+            height: 3px;
+            background: var(--paper-inset);
+            border-radius: 2px;
+            overflow: hidden;
         }
         
-        .password-wrapper .toggle-password svg {
-            width: 20px;
-            height: 20px;
+        #strengthBar {
+            height: 100%;
+            width: 0%;
+            /* Gradient from red to terracotta to sage green */
+            background: linear-gradient(90deg, #ef4444, #e07a5f, #81b29a);
+            transition: width 0.3s ease;
         }
         
+        /* --- Submit Button (Matte Terracotta) --- */
         .submit-button {
             width: 100%;
-            padding: 0.875rem;
+            padding: 14px;
             border: none;
             border-radius: 6px;
-            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            background-color: var(--accent-clay);
             color: white;
             font-size: 1rem;
             font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 1rem;
+            transition: all 0.2s ease;
+            margin-top: 2rem;
+            /* "Thick" button look */
+            box-shadow: 0 4px 0 var(--accent-clay-dark);
+            transform: translateY(0);
         }
         
         .submit-button:hover {
+            background-color: #eb8b70;
             transform: translateY(-2px);
-            box-shadow: 0 7px 20px var(--shadow-color);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
+        }
+
+        .submit-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--accent-clay-dark);
         }
         
+        .submit-button:disabled {
+            background-color: var(--paper-inset);
+            color: var(--ink-tertiary);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* --- Links --- */
         .signin-link {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             font-size: 0.9rem;
+            color: var(--ink-secondary);
         }
         
         .signin-link a {
-            color: var(--accent1);
+            color: var(--ink-primary);
             font-weight: 600;
             text-decoration: none;
+            border-bottom: 1px solid var(--accent-clay);
+            padding-bottom: 2px;
             transition: color 0.2s;
         }
         
-        .signin-link a:hover {
-            color: var(--accent2);
-            text-decoration: underline;
-        }
+        .signin-link a:hover { color: var(--accent-clay); }
         
-        /* Message Box Styling */
+        /* --- Message Box --- */
         #messageBox {
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            z-index: 1000; 
-            padding: 12px 24px; 
-            background-color: #333; 
-            color: white; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+            position: fixed; bottom: 30px; right: 30px; z-index: 1000; 
+            padding: 14px 24px; 
+            background-color: var(--paper-card); 
+            color: var(--ink-primary); 
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
             display: none; 
             font-size: 0.9rem;
+            font-weight: 500;
             opacity: 0;
             transition: opacity 0.3s, transform 0.3s;
-            transform: translateY(100%);
+            transform: translateY(20px);
         }
 
-        #messageBox.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        #messageBox.success {
-            background-color: var(--accent2);
-        }
-
-        #messageBox.error {
-            background-color: #e74c3c;
-        }
+        #messageBox.show { opacity: 1; transform: translateY(0); }
+        #messageBox.success { border-left: 4px solid var(--status-success); }
+        #messageBox.error { border-left: 4px solid var(--status-error); }
         
         @media (max-width: 768px) {
-            body { padding: 1rem 0.5rem; align-items: flex-start; }
-            .registration-form { padding: 1.5rem; }
-            .form-grid { grid-template-columns: 1fr; }
-            .tagline { font-size: 1rem; }
-            #messageBox { bottom: 10px; right: 10px; }
+            body { padding: 1rem; align-items: flex-start; }
+            .registration-form { padding: 2rem 1.5rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .tagline { font-size: 0.9rem; }
+            #messageBox { bottom: 20px; right: 20px; left: 20px; text-align: center;}
         }
     </style>
 </head>
 <body>
 
+    <div id="hero-canvas"></div>
+
     <div class="container">
-        <div class="header-bar"></div>
         
         <form class="registration-form" id="signupForm">
-            <h1 class="form-title">Register</h1>
+            <h1 class="form-title">Join The Huddle</h1>
             <p class="tagline">
                 Find your team. Build <span id="dynamic-text"></span><span class="cursor">|</span>
             </p>
@@ -317,8 +354,8 @@
                             </span>
                         </div>
                          <small id="passwordHelp">Minimum 8 characters.</small>
-                         <div id="passwordStrength" style="margin-top: 0.5rem; height: 4px; background: #e1e8f0; border-radius: 2px; overflow: hidden;">
-                             <div id="strengthBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff8c8c, #ffd073, var(--accent2)); transition: width 0.3s ease;"></div>
+                         <div id="passwordStrength">
+                             <div id="strengthBar"></div>
                          </div>
                     </div>
 
@@ -394,20 +431,78 @@
 
     <div id="messageBox"></div>
 
-    <script>
-        // --- FIX 1: Removed the syntax error line `window.location.origin;;` ---
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.178.0/build/three.module.js" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
 
-        // Utility function to display non-blocking messages (replacing alert())
+        // --- Particle Animation (Subtle Paper Dust) ---
+        const accentColor = 0xe07a5f; // Terracotta
+        const container = document.getElementById('hero-canvas');
+
+        if (container) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            camera.position.z = 5;
+            
+            const particleCount = 3000;
+            const positions = new Float32Array(particleCount * 3);
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+            }
+            
+            const particlesGeometry = new THREE.BufferGeometry();
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                color: accentColor, size: 0.02, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.4, depthWrite: false
+            });
+            
+            const particles = new THREE.Points(particlesGeometry, particleMaterial);
+            scene.add(particles);
+
+            const mouse = new THREE.Vector2();
+            window.addEventListener('mousemove', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            }, false);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                particles.rotation.y = Date.now() * 0.00005;
+                camera.position.x += (mouse.x * 1 - camera.position.x) * 0.02;
+                camera.position.y += (-mouse.y * 1 - camera.position.y) * 0.02;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    </script>
+
+    <script>
         function showMessage(message, type = 'info') {
             const box = document.getElementById('messageBox');
             box.textContent = message;
-            box.className = ''; // Clear existing classes
+            box.className = '';
             box.classList.add(type, 'show');
             box.style.display = 'block';
 
             setTimeout(() => {
                 box.classList.remove('show');
-                // Hide after transition ends
                 setTimeout(() => box.style.display = 'none', 300); 
             }, 3000);
         }
@@ -417,7 +512,7 @@
             const passwordField = document.getElementById('password');
             const confirmPasswordField = document.getElementById('confirmPassword');
 
-            // --- Typewriter Effect ---
+            // Typewriter Effect
             const dynamicText = document.getElementById('dynamic-text');
             const words = ["your vision.", "the next big thing.", "a prize-winning hack.", "innovative AI.", "the future."];
             let wordIndex = 0, charIndex = 0, isDeleting = false;
@@ -440,17 +535,23 @@
             }
             type();
             
-            // --- Password Visibility Toggles ---
+            // Password Toggles
             const togglePassword = document.querySelector('#togglePassword');
             const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
             const eyeIconPath = `<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>`;
             const eyeSlashIconPath = `<path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.284a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829l.822.822zm-3.078-3.078l-1.492-1.492A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 4.156l-12-12-1.414 1.414 12 12 1.414-1.414z"/>`;
-            function toggleVisibility(input, icon) { const type = input.getAttribute('type') === 'password' ? 'text' : 'password'; input.setAttribute('type', type); icon.querySelector('svg').innerHTML = type === 'password' ? eyeIconPath : eyeSlashIconPath; }
+            
+            function toggleVisibility(input, icon) { 
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password'; 
+                input.setAttribute('type', type); 
+                icon.querySelector('svg').innerHTML = type === 'password' ? eyeIconPath : eyeSlashIconPath; 
+            }
+            
             if(togglePassword && passwordField) { togglePassword.addEventListener('click', function () { toggleVisibility(passwordField, this); }); }
             if(toggleConfirmPassword && confirmPasswordField) { toggleConfirmPassword.addEventListener('click', function () { toggleVisibility(confirmPasswordField, this); }); }
             
-            // --- Password Validation & Strength Check ---
             function validatePasswordMatch() { if (confirmPasswordField.value !== passwordField.value) { confirmPasswordField.setCustomValidity('Passwords do not match'); } else { confirmPasswordField.setCustomValidity(''); } }
+            
             function checkPasswordStrength() { 
                 const strengthBar = document.getElementById('strengthBar'); 
                 let strength = 0; 
@@ -461,6 +562,7 @@
                 if (/[^A-Za-z0-9]/.test(passwordField.value)) strength++; 
                 strengthBar.style.width = (strength / 5) * 100 + '%'; 
             }
+            
             if(confirmPasswordField && passwordField) { 
                 confirmPasswordField.addEventListener('input', validatePasswordMatch); 
                 passwordField.addEventListener('input', () => { 
@@ -469,7 +571,6 @@
                 }); 
             }
             
-            // --- Form Submission Handler (This is the correct, functional one) ---
             if (form) {
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
@@ -498,17 +599,14 @@
                     const formData = new FormData(form);
                     const data = Object.fromEntries(formData.entries());
 
-                    // Process skills string into an array
                     data.skills = (data.skills || '')
-                                      .split(',')
-                                      .map(skill => skill.trim())
-                                      .filter(Boolean);
+                                            .split(',')
+                                            .map(skill => skill.trim())
+                                            .filter(Boolean);
                     
-                    // Remove confirmPassword field from data sent to API
                     delete data.confirmPassword;
 
                     try {
-                        // Use the relative path /signup, which is correct for your app.py
                         const response = await fetch('/signup', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -521,8 +619,6 @@
                             showMessage('Account created! Redirecting to sign in...', 'success');
                             form.reset();
                             document.getElementById('strengthBar').style.width = '0%';
-                            
-                            // Redirect after a brief pause
                             setTimeout(() => {
                                 window.location.href = 'login.html';
                             }, 1500);
@@ -541,10 +637,6 @@
                 });
             }
         });
-    
-        // --- FIX 2: Removed the entire duplicate, buggy IIFE script block ---
-        
     </script>
-
 </body>
 </html>
