@@ -4,82 +4,277 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Create Project Group - The Huddle</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* (your styles kept same for familiarity) */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height:100vh; padding:20px;}
-        .container { max-width:800px; margin:0 auto; }
-        .back-btn { background: white; color: #667eea; border:2px solid white; padding:12px 24px; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; transition:all .3s; margin-bottom:20px;}
-        .back-btn:hover { background: rgba(255,255,255,.9); }
-        .form-card { background:white; border-radius:20px; padding:40px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
-        .form-header { text-align:center; margin-bottom:30px; }
-        .form-header h1 { font-size:2rem; color:#2d3748; margin-bottom:10px; }
-        .form-header p { color:#718096; font-size:1rem; }
-        .form-group { margin-bottom:25px; }
-        .form-group label { display:block; margin-bottom:8px; font-weight:600; color:#2d3748; font-size:.95rem; }
-        .form-group input, .form-group textarea, .form-group select { width:100%; padding:14px; border:2px solid #e2e8f0; border-radius:10px; font-size:1rem; font-family:'Inter', sans-serif; transition:all .3s; }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline:none; border-color:#667eea; }
-        .form-group textarea { resize:vertical; min-height:120px; }
-        .form-group small { display:block; margin-top:5px; color:#718096; font-size:.85rem; }
-        .submit-btn { background: linear-gradient(135deg,#667eea 0%, #764ba2 100%); color:white; border:none; padding:15px 40px; border-radius:10px; font-size:1.1rem; font-weight:600; cursor:pointer; width:100%; transition:all .3s; margin-top:10px; }
-        .submit-btn:hover { opacity:.9; transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,.4); }
-        .submit-btn:disabled { opacity:.5; cursor:not-allowed; }
-        .error { color:#b81d1d; margin-top:6px; font-size:.9rem; }
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
+        :root {
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      /* Deep Warm Charcoal */
+            --paper-card: #242321;    /* Lighter Charcoal Cardstock */
+            --paper-inset: #151413;   /* Deep inset for inputs */
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   /* Cream / Off-White */
+            --ink-secondary: #a8a49e; /* Warm Grey */
+            --ink-tertiary: #6b6863;  /* Deep Grey */
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Dimensionality --- */
+            --shadow-card: 
+                1px 1px 0px rgba(255, 255, 255, 0.05) inset, 
+                0 10px 40px rgba(0,0,0,0.5);
+                
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
+            
+            /* --- Status --- */
+            --status-error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        #hero-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; opacity: 0.3;
+        }
+
+        .container { width: 100%; max-width: 700px; margin-top: 2rem; position: relative; z-index: 10; }
+
+        /* --- Back Button (Matte Link) --- */
+        .back-btn {
+            background: transparent;
+            color: var(--ink-secondary);
+            border: 1px solid var(--ink-tertiary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .back-btn:hover {
+            color: var(--ink-primary);
+            border-color: var(--accent-clay);
+            background: var(--paper-card);
+        }
+
+        /* --- Form Card (Thick Stationery) --- */
+        .form-card {
+            background: var(--paper-card);
+            border-radius: 8px;
+            padding: 3rem;
+            box-shadow: var(--shadow-card);
+            border: var(--border-card);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .form-header { text-align: center; margin-bottom: 3rem; }
+        .form-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--ink-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .form-header p {
+            color: var(--ink-secondary);
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        /* --- Inputs (Debossed) --- */
+        .form-group { margin-bottom: 1.75rem; }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: var(--ink-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper-inset);
+            color: var(--ink-primary);
+            /* Inner shadow for depth */
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8), inset -1px -1px 0 rgba(255,255,255,0.1);
+            border-color: var(--accent-clay);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+        
+        .form-group small {
+            display: block; margin-top: 6px;
+            color: var(--ink-tertiary); font-size: 0.8rem; font-style: italic;
+        }
+
+        /* Custom Select Arrow */
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8a49e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            cursor: pointer;
+        }
+
+        /* --- Button (Matte Terracotta) --- */
+        .submit-btn {
+            background-color: var(--accent-clay);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            /* "Thick" button look */
+            box-shadow: 0 4px 0 var(--accent-clay-dark);
+            transform: translateY(0);
+        }
+
+        .submit-btn:hover {
+            background-color: #eb8b70;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
+        }
+
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--accent-clay-dark);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: var(--paper-inset);
+            color: var(--ink-tertiary);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .error {
+            color: var(--status-error);
+            margin-top: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .error::before { content: '⚠'; }
+
+        @media (max-width: 768px) {
+            .container { margin-top: 0; }
+            .form-card { padding: 1.5rem; }
+        }
     </style>
 </head>
 <body>
+    <canvas id="hero-canvas"></canvas>
+
     <div class="container">
-        <button class="back-btn" onclick="window.location.href='mainpage.html'">← Back to Home</button>
+        <button class="back-btn" onclick="window.location.href='mainpage.html'">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </button>
 
         <div class="form-card">
             <div class="form-header">
-                <h1>🚀 Create Project Group</h1>
-                <p>Find teammates for your next amazing project</p>
+                <h1>Create Project Group</h1>
+                <p>Define your vision. Build your team.</p>
             </div>
 
             <form id="createGroupForm" novalidate>
                 <div class="form-group">
-                    <label for="projectName">Project Name *</label>
-                    <input type="text" id="projectName" required placeholder="Enter your project name">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" required placeholder="e.g., AI Waste Sorter">
                     <div id="errProjectName" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="description">Description & Objective *</label>
-                    <textarea id="description" required placeholder="Describe your project goals and what you want to achieve"></textarea>
+                    <label for="description">Description & Objective</label>
+                    <textarea id="description" required placeholder="Describe the problem you are solving and your goal..."></textarea>
                     <div id="errDescription" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="teamSize">Preferred Team Size *</label>
+                    <label for="teamSize">Preferred Team Size</label>
                     <select id="teamSize" required>
-                        <option value="">Select team size</option>
-                        <option value="2">2 members</option>
-                        <option value="3">3 members</option>
-                        <option value="4">4 members</option>
-                        <option value="5">5 members</option>
-                        <option value="6+">6+ members</option>
+                        <option value="" disabled selected>Select Team Size</option>
+                        <option value="2">2 Members</option>
+                        <option value="3">3 Members</option>
+                        <option value="4">4 Members</option>
+                        <option value="5">5 Members</option>
+                        <option value="6+">6+ Members</option>
                     </select>
                     <div id="errTeamSize" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="skills">Required Skills *</label>
-                    <input type="text" id="skills" required placeholder="e.g., JavaScript, Python, React, Node.js">
+                    <label for="skills">Required Skills</label>
+                    <input type="text" id="skills" required placeholder="e.g., JavaScript, Python, React">
                     <small>Separate skills with commas</small>
                     <div id="errSkills" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="timeline">Project Timeline *</label>
-                    <input type="text" id="timeline" required placeholder="e.g., 3 months, 1 semester">
+                    <label for="timeline">Timeline</label>
+                    <input type="text" id="timeline" required placeholder="e.g., 3 months, Hackathon Weekend">
                     <div id="errTimeline" class="error" style="display:none;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="contact">Contact Information (optional)</label>
-                    <input type="text" id="contact" placeholder="Your email or preferred contact method">
+                    <label for="contact">Contact Info <span style="color:var(--ink-tertiary); text-transform:none; font-weight:400;">(Optional)</span></label>
+                    <input type="text" id="contact" placeholder="Email, Discord ID, etc.">
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">Create Group</button>
@@ -87,236 +282,241 @@
         </div>
     </div>
 
-<script>
-/*
-  Key improvements:
-  - API_URL defaults to window.location.origin (works when both frontend + backend are on same domain).
-  - Build payload with only required keys backend expects.
-  - Trim + validate inputs. Normalize timeline (adds plural 'months' when appropriate).
-  - Parse skills robustly; removes typos from empty tokens by filtering.
-  - Better response / error handling and UI feedback.
-*/
-
-(function() {
-    // Use the same origin by default. If you want to force a remote backend, replace below with the absolute URL.
-    const API_URL = window.location.origin;
-
-    function $(id){ return document.getElementById(id); }
-
-    // currentUser fetch from localStorage
-    const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
-
-    // If user not logged in, redirect to login.
-    if (!currentUser || !currentUser.id) {
-        alert('Please login first!');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Utilities
-    function normalizeTimeline(timeline) {
-        if (!timeline) return '';
-        timeline = timeline.trim();
-        // if just a number like "3", assume months
-        if (/^\d+$/.test(timeline)) return timeline + ' months';
-        // if "3 month" -> "3 months"
-        let m = timeline.match(/^(\d+)\s*month(s)?$/i);
-        if (m) return m[1] + ' months';
-        // if "1 month" keep singular
-        m = timeline.match(/^1\s*months$/i);
-        if (m) return '1 month';
-        // default: return input trimmed
-        return timeline;
-    }
-
-    function parseSkills(skillsRaw) {
-        if (!skillsRaw) return [];
-        return skillsRaw
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-            // unify common typos: quick small mapping, you can expand later
-            .map(s => s.replace(/\bpytjon\b/i, 'Python'))
-            // remove duplicate case-insensitive
-            .reduce((acc, skill) => {
-                const existing = acc.find(x => x.toLowerCase() === skill.toLowerCase());
-                if (!existing) acc.push(skill);
-                return acc;
-            }, []);
-    }
-
-    function showError(id, message) {
-        const el = $(id);
-        if (!el) return;
-        el.textContent = message;
-        el.style.display = 'block';
-    }
-    function hideError(id) {
-        const el = $(id);
-        if (!el) return;
-        el.textContent = '';
-        el.style.display = 'none';
-    }
-
-    function validateForm({project_name, description, team_size, skills, timeline}) {
-        let ok = true;
-        if (!project_name || project_name.trim().length < 3) {
-            showError('errProjectName', 'Project name must be at least 3 characters.');
-            ok = false;
-        } else hideError('errProjectName');
-
-        if (!description || description.trim().length < 10) {
-            showError('errDescription', 'Describe your project (at least 10 characters).');
-            ok = false;
-        } else hideError('errDescription');
-
-        if (!team_size || team_size === '') {
-            showError('errTeamSize', 'Select a preferred team size.');
-            ok = false;
-        } else hideError('errTeamSize');
-
-        if (!skills || !skills.length) {
-            showError('errSkills', 'Add at least one skill.');
-            ok = false;
-        } else hideError('errSkills');
-
-        if (!timeline || timeline.trim().length < 2) {
-            showError('errTimeline', 'Provide an estimated timeline (e.g., "3 months").');
-            ok = false;
-        } else hideError('errTimeline');
-
-        return ok;
-    }
-
-    document.getElementById('createGroupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const submitBtn = $('submitBtn');
-        submitBtn.disabled = true;
-        const originalBtnText = submitBtn.textContent;
-        submitBtn.textContent = 'Creating Group...';
-
-        try {
-            // read and normalize inputs
-            const project_name = $('projectName').value.trim();
-            const description_objective = $('description').value.trim();
-            const preferred_team_size = $('teamSize').value;
-            const required_skills = parseSkills($('skills').value);
-            const project_timeline = normalizeTimeline($('timeline').value.trim());
-            // contact left out from payload (backend create_group doesn't use it). If you want to store, update backend.
-            const contact_info_raw = $('contact').value.trim();
-
-            // validate
-            const isValid = validateForm({
-                project_name, description: description_objective,
-                team_size: preferred_team_size, skills: required_skills, timeline: project_timeline
-            });
-
-            if (!isValid) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-                return;
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.178.0/build/three.module.js';
+        
+        // --- Background Particle Animation (Paper Dust) ---
+        const accentColor = 0xe07a5f; 
+        const container = document.getElementById('hero-canvas');
+        if (container) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            camera.position.z = 5;
+            
+            const particleCount = 1500;
+            const positions = new Float32Array(particleCount * 3);
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
             }
+            const particlesGeometry = new THREE.BufferGeometry();
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: accentColor, size: 0.02, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.3, depthWrite: false
+            });
+            const particles = new THREE.Points(particlesGeometry, particleMaterial);
+            scene.add(particles);
 
-            // Build payload with only the backend-expected fields
-            const payload = {
-                creatoruserid: currentUser.id,
-                project_name,
-                description_objective,
-                preferred_team_size,
-                required_skills,
-                project_timeline
+            function animate() {
+                requestAnimationFrame(animate);
+                particles.rotation.y = Date.now() * 0.00005;
+                renderer.render(scene, camera);
             };
+            animate();
 
-            // Optional: if you have backend support for contact_info, send it. For now we log it.
-            if (contact_info_raw) {
-                console.debug('Contact info provided (not sent):', contact_info_raw);
-            }
-
-            console.debug('Sending creategroup payload:', payload);
-
-            const res = await fetch(`${API_URL}/creategroup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             });
+        }
+    </script>
 
-            // handle non-json responses gracefully
-            let data;
-            const text = await res.text();
-            try { data = JSON.parse(text); } catch (err) { data = { raw: text }; }
+    <script>
+    (function() {
+        const API_URL = window.location.origin;
 
-            if (res.ok) {
-                // success expected to be {"success":true, "groupId": "..."}
-                if (data && data.success) {
-                    alert('🎉 Group created successfully! Redirecting to groups page...');
-                    window.location.href = 'mainpage.html#groups';
-                    return;
-                } else {
-                    // backend returned 200 but data.success is falsey
-                    console.warn('Create group returned success=false', data);
-                    alert('Error creating group: ' + (data.error || JSON.stringify(data)));
+        function $(id){ return document.getElementById(id); }
+
+        const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
+
+        if (!currentUser || !currentUser.id) {
+            // alert('Please login first!'); // Removed alert for cleaner flow
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Utilities
+        function normalizeTimeline(timeline) {
+            if (!timeline) return '';
+            timeline = timeline.trim();
+            if (/^\d+$/.test(timeline)) return timeline + ' months';
+            let m = timeline.match(/^(\d+)\s*month(s)?$/i);
+            if (m) return m[1] + ' months';
+            m = timeline.match(/^1\s*months$/i);
+            if (m) return '1 month';
+            return timeline;
+        }
+
+        function parseSkills(skillsRaw) {
+            if (!skillsRaw) return [];
+            return skillsRaw
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
+                .map(s => s.replace(/\bpytjon\b/i, 'Python'))
+                .reduce((acc, skill) => {
+                    const existing = acc.find(x => x.toLowerCase() === skill.toLowerCase());
+                    if (!existing) acc.push(skill);
+                    return acc;
+                }, []);
+        }
+
+        function showError(id, message) {
+            const el = $(id);
+            if (!el) return;
+            el.textContent = message;
+            el.style.display = 'block';
+        }
+        function hideError(id) {
+            const el = $(id);
+            if (!el) return;
+            el.textContent = '';
+            el.style.display = 'none';
+        }
+
+        function validateForm({project_name, description, team_size, skills, timeline}) {
+            let ok = true;
+            if (!project_name || project_name.trim().length < 3) {
+                showError('errProjectName', 'Project name must be at least 3 characters.');
+                ok = false;
+            } else hideError('errProjectName');
+
+            if (!description || description.trim().length < 10) {
+                showError('errDescription', 'Describe your project (at least 10 characters).');
+                ok = false;
+            } else hideError('errDescription');
+
+            if (!team_size || team_size === '') {
+                showError('errTeamSize', 'Select a preferred team size.');
+                ok = false;
+            } else hideError('errTeamSize');
+
+            if (!skills || !skills.length) {
+                showError('errSkills', 'Add at least one skill.');
+                ok = false;
+            } else hideError('errSkills');
+
+            if (!timeline || timeline.trim().length < 2) {
+                showError('errTimeline', 'Provide an estimated timeline (e.g., "3 months").');
+                ok = false;
+            } else hideError('errTimeline');
+
+            return ok;
+        }
+
+        document.getElementById('createGroupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = $('submitBtn');
+            submitBtn.disabled = true;
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating...';
+
+            try {
+                const project_name = $('projectName').value.trim();
+                const description_objective = $('description').value.trim();
+                const preferred_team_size = $('teamSize').value;
+                const required_skills = parseSkills($('skills').value);
+                const project_timeline = normalizeTimeline($('timeline').value.trim());
+                const contact_info_raw = $('contact').value.trim();
+
+                const isValid = validateForm({
+                    project_name, description: description_objective,
+                    team_size: preferred_team_size, skills: required_skills, timeline: project_timeline
+                });
+
+                if (!isValid) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
                     return;
                 }
-            } else {
-                // HTTP error like 400/404/500
-                console.error('Create group HTTP error', res.status, data);
-                const serverMsg = (data && (data.error || data.message)) ? (data.error || data.message) : `HTTP ${res.status}`;
-                alert(`Failed to create group: ${serverMsg}`);
+
+                const payload = {
+                    creatoruserid: currentUser.id,
+                    project_name,
+                    description_objective,
+                    preferred_team_size,
+                    required_skills,
+                    project_timeline
+                };
+
+                if (contact_info_raw) {
+                    console.debug('Contact info provided (not sent):', contact_info_raw);
+                }
+
+                const res = await fetch(`${API_URL}/creategroup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                let data;
+                const text = await res.text();
+                try { data = JSON.parse(text); } catch (err) { data = { raw: text }; }
+
+                if (res.ok) {
+                    if (data && data.success) {
+                        // Simple redirect, no alert needed for sleek feel
+                        window.location.href = 'mainpage.html#groups';
+                        return;
+                    } else {
+                        alert('Error creating group: ' + (data.error || JSON.stringify(data)));
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                        return;
+                    }
+                } else {
+                    console.error('Create group HTTP error', res.status, data);
+                    const serverMsg = (data && (data.error || data.message)) ? (data.error || data.message) : `HTTP ${res.status}`;
+                    alert(`Failed to create group: ${serverMsg}`);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                    return;
+                }
+            } catch (err) {
+                console.error('Error creating group:', err);
+                alert('Failed to create group. Check connection.');
+                const submitBtn = $('submitBtn');
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-                return;
-            }
-        } catch (err) {
-            console.error('Error creating group:', err);
-            alert('Failed to create group. Check console / network tab for details.');
-            const submitBtn = $('submitBtn');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Create Group';
-        }
-    });
-
-    // =========== BUG FIX: NAVIGATION (UNIVERSAL) ===========
-    document.addEventListener('DOMContentLoaded', function() {
-        const pageRoutes = {
-            'mainpage': '/mainpage.html',
-            'profile': '/profile.html',
-            'qa': '/qa.html',
-            'discuss': '/discuss-room.html',
-            'groups': '/group-creationpage.html',
-            'notifications': '/notifications.html',
-            'chat': '/chatpage.html'
-        };
-
-        // Fix data-page navigation
-        document.querySelectorAll('[data-page]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const page = this.getAttribute('data-page');
-                if (pageRoutes[page]) window.location.href = pageRoutes[page];
-            });
-        });
-
-        // Fix logout
-        document.querySelectorAll('[onclick*="logout"], #logoutBtn, .logout-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                localStorage.clear();
-                window.location.href = '/login.html';
-            });
-        });
-
-        // Fix home/logo link
-        document.querySelectorAll('a[href="#"], a[href=""], .logo, .brand').forEach(link => {
-            if (link.textContent.toLowerCase().includes('huddle') || link.classList.contains('logo')) {
-                link.style.cursor = 'pointer';
-                link.addEventListener('click', () => window.location.href = '/mainpage.html');
+                submitBtn.textContent = 'Create Group';
             }
         });
-    });
-})();
-</script>
+
+        // Navigation Logic Fix
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageRoutes = {
+                'mainpage': 'mainpage.html',
+                'profile': 'profile.html',
+                'qa': 'qa.html',
+                'discuss': 'discuss-room.html',
+                'groups': 'group-creationpage.html',
+                'notifications': 'notifications.html',
+                'chat': 'chatpage.html'
+            };
+
+            document.querySelectorAll('[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    if (pageRoutes[page]) window.location.href = pageRoutes[page];
+                });
+            });
+
+            document.querySelectorAll('[onclick*="logout"], #logoutBtn, .logout-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                });
+            });
+        });
+    })();
+    </script>
 </body>
 </html>
