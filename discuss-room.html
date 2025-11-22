@@ -4,258 +4,311 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discussion Rooms - The Huddle</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* =========================================
+           THE HUDDLE: ATELIER DARK (PREMIUM PAPER)
+           =========================================
+        */
+        :root {
+            /* --- Paper Palette --- */
+            --paper-bg: #1a1918;      /* Deep Warm Charcoal */
+            --paper-card: #242321;    /* Lighter Charcoal Cardstock */
+            --paper-inset: #151413;   /* Deep inset for inputs */
+            
+            /* --- Ink & Text --- */
+            --ink-primary: #f2f0e9;   /* Cream / Off-White */
+            --ink-secondary: #a8a49e; /* Warm Grey */
+            --ink-tertiary: #6b6863;  /* Deep Grey */
+            
+            /* --- Accents (Matte Terracotta) --- */
+            --accent-clay: #e07a5f;
+            --accent-clay-dark: #c45f44;
+            
+            /* --- Dimensionality --- */
+            --shadow-card: 
+                1px 1px 0px rgba(255, 255, 255, 0.05) inset, 
+                0 4px 20px rgba(0,0,0,0.4);
+            
+            --border-card: 1px solid rgba(255, 255, 255, 0.03);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--paper-bg);
+            color: var(--ink-primary);
             min-height: 100vh;
-            padding: 20px;
+            padding: 2rem 1rem;
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
+        /* --- Header --- */
         .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
+            text-align: center; margin-bottom: 4rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 2rem;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: var(--ink-primary);
+            letter-spacing: 0.02em;
         }
 
         .header p {
             font-size: 1.1rem;
-            opacity: 0.9;
+            color: var(--ink-secondary);
+            font-weight: 300;
+        }
+
+        /* --- Buttons --- */
+        .back-btn {
+            background: transparent;
+            color: var(--ink-secondary);
+            border: 1px solid var(--ink-tertiary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .back-btn:hover {
+            color: var(--ink-primary);
+            border-color: var(--accent-clay);
+            background: var(--paper-card);
         }
 
         .create-room-btn {
-            background: white;
-            color: #667eea;
+            background-color: var(--accent-clay);
+            color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 4px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 0 var(--accent-clay-dark);
+            transform: translateY(0);
         }
 
         .create-room-btn:hover {
+            background-color: #eb8b70;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
         }
 
+        .create-room-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--accent-clay-dark);
+        }
+
+        /* --- Rooms Grid --- */
         .rooms-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
         }
 
+        /* --- Room Card (Tactile Paper) --- */
         .room-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            background: var(--paper-card);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            border: var(--border-card);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
+            display: flex; flex-direction: column;
         }
 
         .room-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+            border-color: rgba(255,255,255,0.1);
         }
 
         .room-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 1rem;
         }
 
         .room-title {
+            font-family: 'Playfair Display', serif;
             font-size: 1.4rem;
             font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .room-topic {
-            font-size: 0.9rem;
-            color: #718096;
-            margin-bottom: 15px;
+            color: var(--ink-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
         }
 
         .room-group {
-            font-size: 0.85rem;
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 10px;
-            background: #e6f2ff;
-            padding: 5px 10px;
-            border-radius: 5px;
+            font-size: 0.75rem;
+            color: var(--accent-clay);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
             display: inline-block;
+            border: 1px solid var(--accent-clay-dark);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .room-topic {
+            font-size: 0.95rem;
+            color: var(--ink-secondary);
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            border-left: 2px solid var(--ink-tertiary);
+            padding-left: 12px;
         }
 
         .room-meta {
-            display: flex;
-            gap: 20px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.9rem;
-            color: #718096;
+            display: flex; justify-content: space-between;
+            margin-top: auto; padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem; color: var(--ink-tertiary);
         }
 
         .last-message {
-            background: #f7fafc;
-            padding: 10px;
-            border-radius: 8px;
+            background: var(--paper-inset);
+            padding: 10px 14px;
+            border-radius: 6px;
             font-size: 0.9rem;
-            color: #4a5568;
-            margin-top: 10px;
-            font-style: italic;
+            color: var(--ink-secondary);
+            margin-top: 1rem;
+            border: 1px solid rgba(255,255,255,0.03);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
+        /* --- Modal (Dark Paper) --- */
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(26, 25, 24, 0.95);
+            align-items: center; justify-content: center;
         }
+        
+        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background-color: var(--paper-card);
+            padding: 3rem;
+            border-radius: 8px;
+            width: 90%; max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
         }
 
         .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+            color: var(--ink-tertiary);
+            position: absolute; top: 1.5rem; right: 2rem;
+            font-size: 2rem; font-weight: bold; cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close:hover { color: var(--accent-clay); }
+
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; color: var(--ink-primary);
+            margin-bottom: 2rem;
+        }
+
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 1.5rem; }
+        
+        .form-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-weight: 600; color: var(--ink-secondary);
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 14px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 1rem; font-family: 'Inter', sans-serif;
+            background: var(--paper-inset); color: var(--ink-primary);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.05);
+            outline: none; transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--accent-clay);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8a49e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
             cursor: pointer;
         }
 
-        .close:hover {
-            color: #000;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+        .form-group textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
 
         .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
+            background-color: var(--accent-clay);
+            color: white; border: none;
+            padding: 14px 30px; border-radius: 4px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%;
+            transition: all 0.2s; margin-top: 1rem;
+            text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Inter';
+            box-shadow: 0 4px 0 var(--accent-clay-dark); transform: translateY(0);
         }
 
         .submit-btn:hover {
-            opacity: 0.9;
+            background-color: #eb8b70;
             transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--accent-clay-dark);
         }
 
-        .back-btn {
-            background: white;
-            color: #667eea;
-            border: 2px solid white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--accent-clay-dark);
         }
 
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            padding: 40px;
-        }
-
+        /* --- States --- */
+        .loading { text-align: center; color: var(--ink-secondary); font-size: 1rem; padding: 60px; font-style: italic; }
+        
         .no-rooms {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            padding: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            text-align: center; color: var(--ink-secondary);
+            font-size: 1.1rem; padding: 80px;
+            background: var(--paper-card);
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+            grid-column: 1 / -1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <button class="back-btn" onclick="window.location.href='mainpage.html'">← Back to Home</button>
+        <button class="back-btn" onclick="window.location.href='mainpage.html'">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </button>
         
         <div class="header">
-            <h1>💬 Discussion Rooms</h1>
-            <p>Join conversations with your group members</p>
+            <h1>Discussion Rooms</h1>
+            <p>Collaborate and brainstorm with your team in real-time.</p>
             <button class="create-room-btn" onclick="openModal()">+ Create New Room</button>
         </div>
 
@@ -266,7 +319,7 @@
     <div id="createRoomModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h2 style="margin-bottom: 20px; color: #2d3748;">Create Discussion Room</h2>
+            <h2 style="margin-bottom: 20px; color: var(--ink-primary);">Create Discussion Room</h2>
             <form id="createRoomForm">
                 <div class="form-group">
                     <label for="groupSelect">Select Group *</label>
@@ -288,22 +341,15 @@
     </div>
 
     <script>
-        // *** FIX 1: Added '=' sign ***
         const API_URL = window.location.origin;
-        
-        // Your code correctly gets the user from 'huddleUser'
         const currentUser = JSON.parse(localStorage.getItem('huddleUser') || '{}');
 
-        // *** FIX 2: Removed extra '(' ***
         if (!currentUser || !currentUser.id) {
-            alert('Please login first!');
             window.location.href = 'login.html';
         }
 
-        // This stays the same
         window.addEventListener('DOMContentLoaded', loadDiscussions);
 
-        // This function stays the same
         async function loadDiscussions() {
             try {
                 const response = await fetch(`${API_URL}/getdiscussions?userId=${currentUser.id}`);
@@ -315,35 +361,37 @@
                 } else {
                     document.getElementById('roomsContainer').innerHTML = `
                         <div class="no-rooms">
-                            <h3>No discussion rooms yet</h3>
-                            <p>Join a group and create the first discussion room!</p>
+                            <p>No discussion rooms yet.</p>
+                            <p style="font-size:0.9rem; margin-top:10px; color:var(--ink-tertiary);">Join a group and create the first discussion room!</p>
                         </div>
                     `;
                 }
             } catch (error) {
                 console.error('Error loading discussions:', error);
                 document.getElementById('loadingDiv').innerHTML = 
-                    '<p style="color: #ff6b6b;">Failed to load discussions. Please try again.</p>';
+                    '<p style="color: #ef4444;">Failed to load discussions. Please try again.</p>';
             }
         }
 
-        // This function stays the same
         function displayDiscussions(discussions) {
             const container = document.getElementById('roomsContainer');
             container.innerHTML = discussions.map(room => `
                 <div class="room-card" onclick="joinDiscussion('${room.discussionId}', '${escapeHtml(room.roomName)}')">
                     <div class="room-header">
                         <div style="width: 100%;">
+                            ${room.groupName ? `<div class="room-group">${escapeHtml(room.groupName)}</div>` : ''}
                             <div class="room-title">${escapeHtml(room.roomName)}</div>
-                            ${room.groupName ? `<div class="room-group">📁 ${escapeHtml(room.groupName)}</div>` : ''}
-                            <div class="room-topic">${escapeHtml(room.topic || 'General discussion')}</div>
                         </div>
                     </div>
+                    
+                    <div class="room-topic">${escapeHtml(room.topic || 'General discussion')}</div>
+                    
                     ${room.lastMessage ? `
                         <div class="last-message">
                             💬 ${escapeHtml(room.lastMessage.substring(0, 80))}${room.lastMessage.length > 80 ? '...' : ''}
                         </div>
                     ` : ''}
+                    
                     <div class="room-meta">
                         <div class="meta-item">
                             👤 ${room.participants ? room.participants.length : 1} participant(s)
@@ -356,7 +404,6 @@
             `).join('');
         }
 
-        // This function stays the same
         function joinDiscussion(discussionId, roomName) {
             localStorage.setItem('currentDiscussion', JSON.stringify({
                 discussionId: discussionId,
@@ -365,7 +412,6 @@
             window.location.href = 'chatpage.html';
         }
 
-        // This function stays the same
         function formatDate(dateString) {
             const date = new Date(dateString);
             const now = new Date();
@@ -381,26 +427,18 @@
             return date.toLocaleDateString();
         }
 
-        // This function stays the same
         function escapeHtml(text) {
             const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // 
-        // ===================================================================
-        // THIS IS THE ONLY FUNCTION THAT HAS CHANGED
-        // ===================================================================
-        //
         async function loadUserGroups() {
             const selectElement = document.getElementById('groupSelect');
             try {
-                // 1. Call the NEW /getmygroups endpoint with the correct userId
                 const response = await fetch(`${API_URL}/getmygroups?userId=${currentUser.id}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    // 2. The data is already filtered, no .filter() needed!
                     const userGroups = data.groups; 
                     
                     if (userGroups.length === 0) {
@@ -412,12 +450,10 @@
                     userGroups.forEach(group => {
                         const option = document.createElement('option');
                         option.value = group.groupId;
-                        // 3. The new endpoint returns 'groupName'
                         option.textContent = group.groupName; 
                         selectElement.appendChild(option);
                     });
                 } else {
-                    // Handle errors from the API
                     throw new Error(data.error || 'Failed to parse groups');
                 }
             } catch (error) {
@@ -426,19 +462,16 @@
             }
         }
 
-        // This function stays the same
         function openModal() {
-            document.getElementById('createRoomModal').style.display = 'block';
-            loadUserGroups(); // This now calls the fixed function
+            document.getElementById('createRoomModal').style.display = 'flex'; // Changed to flex for centering
+            loadUserGroups();
         }
 
-        // This function stays the same
         function closeModal() {
             document.getElementById('createRoomModal').style.display = 'none';
             document.getElementById('createRoomForm').reset();
         }
 
-        // This function stays the same
         window.onclick = function(event) {
             const modal = document.getElementById('createRoomModal');
             if (event.target == modal) {
@@ -446,7 +479,6 @@
             }
         }
 
-        // This form submit listener is perfect, it stays the same
         document.getElementById('createRoomForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -458,6 +490,10 @@
                 alert('Please select a group!');
                 return;
             }
+
+            const btn = document.querySelector('#createRoomForm .submit-btn');
+            btn.disabled = true;
+            btn.textContent = "Creating...";
 
             try {
                 const response = await fetch(`${API_URL}/creatediscussion`, {
@@ -483,10 +519,12 @@
             } catch (error) {
                 console.error('Error creating room:', error);
                 alert('Failed to create room. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Create Room";
             }
         });
     
-        // This navigation bugfix code stays the same
         document.addEventListener('DOMContentLoaded', function() {
             const pageRoutes = {
                 'mainpage': '/mainpage.html',
